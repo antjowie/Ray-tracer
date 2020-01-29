@@ -16,7 +16,7 @@ class Scene
 {
 public:
     void Add(Primitive&& primitive);
-    void Add(const char* path);
+    void Add(const char* path); // Loads a gltf file
 
     void Clear();
 
