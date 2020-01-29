@@ -11,26 +11,34 @@ void Render(const mat4& t, Surface& screen, const Scene& scene)
     float3 down = p2 - p0;
 
     // Calculate ray directions
-    for (unsigned y = 0; y < screen.GetHeight(); y++)
+    for (int y = 0; y < screen.GetHeight(); y++)
     {
-        for (unsigned x = 0; x < screen.GetWidth(); x++)
+        for (int x = 0; x < screen.GetWidth(); x++)
         {
-            float u = x / screen.GetHeight();
-            float v = y / screen.GetWidth();
+            float u = (float)x / screen.GetHeight();
+            float v = (float)y / screen.GetWidth();
             float3 P = p0 + u * right + v * down;
             float3 D = normalize(P - E);
 
             Ray ray;
             ray.origin = E;
             ray.dir = D;
-            float3 c = Trace(ray,scene);
-            
-            screen.Plot(x, y, make_uint3(c));
+            Pixel c = Trace(ray,scene);
+            screen.Plot(x, y, c);
         }
     }
 }
 
-float3 Trace(Ray ray, const Scene& scene)
+Pixel Trace(const Ray &ray, const Scene& scene)
 {
-    return ray.dir * 256.f;
+    uint3 c = uint3();
+    c.x = clamp(ray.dir.x,0.f,1.f) * 0xff;
+    c.y = clamp(ray.dir.y,0.f,1.f) * 0xff;
+    c.z = clamp(ray.dir.z,0.f,1.f) * 0xff;
+
+    c = clamp(c, 0, 0xff);
+    // Convert to color
+    const Pixel color = ((c.x & 0x0ff) << 16) | ((c.y & 0x0ff) << 8) | (c.z & 0x0ff);
+
+    return color;
 }

@@ -37,14 +37,7 @@ struct ALIGN( 8 ) int2 { int x, y; };
 struct ALIGN( 8 ) uint2 { uint x, y; };
 struct ALIGN( 8 ) float2 { float x, y; };
 struct int3 { int x, y, z; };
-struct uint3 { uint x, y, z; 
-operator Tmpl8::Pixel() { 
-	const unsigned r = (x & REDMASK) | (REDMASK * (x >> 24));
-	const unsigned g = (y & GREENMASK) | (GREENMASK * (y >> 16));
-	const unsigned b = (z & BLUEMASK) | (BLUEMASK * (z >> 8));
-	return r + g + b;
-}
-};
+struct uint3 { uint x, y, z; };
 struct float3 { float x, y, z; };
 struct ALIGN( 16 ) int4 { int x, y, z, w; };
 struct ALIGN( 16 ) uint4 { uint x, y, z, w; };
@@ -304,7 +297,6 @@ inline uint3 make_uint3( uint2 a ) { return make_uint3( a.x, a.y, 0 ); }
 inline uint3 make_uint3( uint2 a, uint s ) { return make_uint3( a.x, a.y, s ); }
 inline uint3 make_uint3( uint4 a ) { return make_uint3( a.x, a.y, a.z ); }
 inline uint3 make_uint3( int3 a ) { return make_uint3( uint( a.x ), uint( a.y ), uint( a.z ) ); }
-inline uint3 make_uint3( float3 a) { return make_uint3(uint(a.x), uint(a.y), uint(a.z)); }
 inline float4 make_float4( float a, float b, float c, float d ) { float4 f4; f4.x = a, f4.y = b, f4.z = c, f4.w = d; return f4; }
 inline float4 make_float4( float s ) { return make_float4( s, s, s, s ); }
 inline float4 make_float4( float3 a ) { return make_float4( a.x, a.y, a.z, 0.0f ); }

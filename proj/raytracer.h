@@ -22,4 +22,4 @@ struct PrimaryHit
 // Free functions
 // ------------
 void Render(const mat4& t, Surface& screen, const Scene& scene);
-float3 Trace(Ray ray, const Scene& scene);
+Pixel Trace(const Ray &ray, const Scene& scene);
