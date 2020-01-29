@@ -103,8 +103,8 @@ using namespace Tmpl8;
 
 // Game
 #include "game.h"				// game class
-#include "raytracer.h"
 #include "scene.h"
+#include "raytracer.h"
 
 // clang-format on
 

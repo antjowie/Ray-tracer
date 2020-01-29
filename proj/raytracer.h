@@ -8,6 +8,8 @@
 // ------------
 struct Ray
 {
+    float3 origin;
+    float3 dir;
 };
 
 struct PrimaryHit
@@ -19,5 +21,5 @@ struct PrimaryHit
 // ------------
 // Free functions
 // ------------
-void Render(const mat4& t, Surface& screen, );
-void Trace(Ray s);
+void Render(const mat4& t, Surface& screen, const Scene& scene);
+float3 Trace(Ray ray, const Scene& scene);

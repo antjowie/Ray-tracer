@@ -26,6 +26,8 @@
     <ClCompile Include="lib\imgui\imgui_widgets.cpp">
       <Filter>template code\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="raytracer.cpp" />
+    <ClCompile Include="scene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />
@@ -40,6 +42,7 @@
       <Filter>template code\imgui</Filter>
     </ClInclude>
     <ClInclude Include="raytracer.h" />
+    <ClInclude Include="scene.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="template code">

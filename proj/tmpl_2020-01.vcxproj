@@ -146,6 +146,8 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">precomp.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">precomp.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="raytracer.cpp" />
+    <ClCompile Include="scene.cpp" />
     <ClCompile Include="surface.cpp" />
     <ClCompile Include="template.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -156,6 +158,7 @@
     <ClInclude Include="lib\imgui\imgui.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="raytracer.h" />
+    <ClInclude Include="scene.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="template.h" />
   </ItemGroup>

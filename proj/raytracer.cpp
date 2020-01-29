@@ -1,6 +1,6 @@
 #include "precomp.h"
 
-void Render(const mat4& t, Surface& screen)
+void Render(const mat4& t, Surface& screen, const Scene& scene)
 {
     // Calculate eye and screen
     float3 p0 = t * make_float3(-1, 1, 1); // top-left
@@ -19,8 +19,18 @@ void Render(const mat4& t, Surface& screen)
             float v = y / screen.GetWidth();
             float3 P = p0 + u * right + v * down;
             float3 D = normalize(P - E);
-            float3 c = Trace(Ray(E, D));
-            // TODO: visualize c somehow
+
+            Ray ray;
+            ray.origin = E;
+            ray.dir = D;
+            float3 c = Trace(ray,scene);
+            
+            screen.Plot(x, y, make_uint3(c));
         }
     }
+}
+
+float3 Trace(Ray ray, const Scene& scene)
+{
+    return ray.dir * 256.f;
 }

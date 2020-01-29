@@ -19,7 +19,8 @@ void Game::Shutdown()
 // -----------------------------------------------------------
 void Game::Tick( float deltaTime )
 {
+	static Scene scene;
 	// clear the graphics window
 	screen->Clear(deltaTime);
-
+	Render(mat4::Identity(), *screen, scene);
 }
