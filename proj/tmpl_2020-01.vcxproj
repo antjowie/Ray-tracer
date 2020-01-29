@@ -152,15 +152,23 @@
     <ClCompile Include="template.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="tiny_gltf_build.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="lib\imgui\imgui.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="raytracer.h" />
     <ClInclude Include="scene.h" />
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="template.h" />
+    <ClInclude Include="tiny_gltf.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="_readme.txt" />

@@ -28,6 +28,9 @@
     </ClCompile>
     <ClCompile Include="raytracer.cpp" />
     <ClCompile Include="scene.cpp" />
+    <ClCompile Include="tiny_gltf_build.cpp">
+      <Filter>tiny_gltf</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />
@@ -43,6 +46,18 @@
     </ClInclude>
     <ClInclude Include="raytracer.h" />
     <ClInclude Include="scene.h" />
+    <ClInclude Include="tiny_gltf.h">
+      <Filter>tiny_gltf</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>tiny_gltf</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image_write.h">
+      <Filter>tiny_gltf</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>tiny_gltf</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="template code">
@@ -50,6 +65,9 @@
     </Filter>
     <Filter Include="template code\imgui">
       <UniqueIdentifier>{a1107f33-3bd1-4a38-9c1a-8a48d2f18ac1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tiny_gltf">
+      <UniqueIdentifier>{aa311959-e2f5-4003-8f99-4c951b01d27d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
