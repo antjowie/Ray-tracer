@@ -21,3 +21,4 @@ Even faster, quality of randomness -> sampling, estimation -> **Efficiency**
 * Fri  
 Future work -> path guiding -> **Great product**
 
+15:15-16:30 turn into whitted ray tracer

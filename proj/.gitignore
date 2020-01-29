@@ -1,3 +1,30 @@
+# From the clean bat
+*.ncb
+*.ilk
+*.sdf
+*.exp
+*.map
+*.pdb
+x64/*.exp
+x64/*.lib
+Upgradelog.xml
+*.exe
+*.bsc
+applog.txt
+*.suo
+*.user
+*.o
+*.VC.db
+ipch
+release
+debug
+.vs
+x64/debug
+x64/release
+x64/*.exe
+x64/*.ilk
+x64/*.pdb
+
 # Prerequisites
 *.d
 

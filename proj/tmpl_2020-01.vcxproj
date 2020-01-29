@@ -155,6 +155,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="lib\imgui\imgui.h" />
     <ClInclude Include="precomp.h" />
+    <ClInclude Include="raytracer.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="template.h" />
   </ItemGroup>
