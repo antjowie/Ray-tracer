@@ -2,8 +2,10 @@
 
 struct Primitive
 {
-    Primitive(float3 v0, float3 v1, float3 v2) { v[0] = v0; v[1] = v1; v[2] = v2; }
-
+    Primitive(float3 v0, float3 v1, float3 v2, uint c = 0xffffff) : color (c)
+    { v[0] = v0; v[1] = v1; v[2] = v2; }
+    
+    uint color;
     float3 v[3];
 };
 

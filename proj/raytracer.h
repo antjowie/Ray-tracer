@@ -14,6 +14,10 @@ struct Ray
 
 struct PrimaryHit
 {
+    bool isHit = false;
+    float t = 0.f;
+
+    const Primitive* prim;
     float3 hit;
     float3 surfaceNormal;
 };
