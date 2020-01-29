@@ -101,9 +101,11 @@ using namespace Tmpl8;
 // In your own .cpp files just add #include "precomp.h".
 // #include "my_include.h"
 
+// Raytracers
+#include "scene.h"
+
 // Game
 #include "game.h"				// game class
-#include "scene.h"
 #include "raytracer.h"
 
 // clang-format on

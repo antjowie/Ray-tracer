@@ -32,9 +32,10 @@ void Render(const mat4& t, Surface& screen, const Scene& scene)
 Pixel Trace(const Ray &ray, const Scene& scene)
 {
     uint3 c = uint3();
-    c.x = clamp(ray.dir.x,0.f,1.f) * 0xff;
-    c.y = clamp(ray.dir.y,0.f,1.f) * 0xff;
-    c.z = clamp(ray.dir.z,0.f,1.f) * 0xff;
+    //c.x = clamp(ray.dir.x,0.f,1.f) * 0xff;
+    //c.y = clamp(ray.dir.y,0.f,1.f) * 0xff;
+    //c.z = clamp(ray.dir.z,0.f,1.f) * 0xff;
+    c.x = ray.dir.z * 0xff;
 
     c = clamp(c, 0, 0xff);
     // Convert to color
