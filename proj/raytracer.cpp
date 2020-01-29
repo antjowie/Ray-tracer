@@ -3,10 +3,10 @@
 void Render(const mat4& t, Surface& screen, const Scene& scene)
 {
     // Calculate eye and screen
-    float3 p0 = t * make_float3(-1, 1, 1); // top-left
-    float3 p1 = t * make_float3(1, 1, 1); // top-right
-    float3 p2 = t * make_float3(-1, -1, 1); // bottom-left
-    float3 E = t * make_float3(0, 0, 0);
+    float3 p0 = t.TransformPoint(make_float3(-1, 1, 1)); // top-left
+    float3 p1 = t.TransformPoint(make_float3(1, 1, 1)); // top-right
+    float3 p2 = t.TransformPoint(make_float3(-1, -1, 1)); // bottom-left
+    float3 E = t.TransformPoint(make_float3(0, 0, 0));
     float3 right = p1 - p0;
     float3 down = p2 - p0;
 

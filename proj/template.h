@@ -658,7 +658,7 @@ public:
 	{
 		for (int i = 0; i < 16; i++) if (m.cell[i] != cell[i]) return false; return true;
 	}
-	float3 GetTranslation() { return make_float3( cell[3], cell[7], cell[11] ); }
+	float3 GetTranslation() const { return make_float3( cell[3], cell[7], cell[11] ); }
 	constexpr static mat4 Identity() { return mat4{}; }
 	static mat4 ZeroMatrix() { mat4 r; memset( r.cell, 0, 64 ); return r; }
 	static mat4 RotateX( const float a ) { mat4 r; r.cell[5] = cosf( a ); r.cell[6] = -sinf( a ); r.cell[9] = sinf( a ); r.cell[10] = cosf( a ); return r; };

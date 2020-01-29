@@ -6,6 +6,11 @@
 void Game::Init()
 {
 	scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
+	scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
+
+	dt = 0;
+	speed = 10.f;
+	camera = camera.Identity();
 }
 
 // -----------------------------------------------------------
@@ -20,21 +25,28 @@ void Game::Shutdown()
 // -----------------------------------------------------------
 void Game::Tick(float deltaTime)
 {
+	dt = deltaTime; // For camera. TODO make input manager
+
 	// clear the graphics window
 	screen->Clear(deltaTime);
 
-	Render(mat4::Identity(), *screen, scene);
+	Render(camera, *screen, scene);
 }
 
-void Tmpl8::Game::MoveCamera(float deltaTime)
+void Game::KeyDown(int key)
 {
-	//float3 movement = float3();
-	//if (glfwGetKey(GLFW_KEY_Q) == GLFW_TRUE) movement.y += 1;
-	//if (glfwGetKey(GLFW_KEY_E) == GLFW_TRYE) movement.y += -1;
-	//if (glfwGetKey(GLFW_KEY_W) == GLFW_TRYE) movement.z += 1;
-	//if (glfwGetKey(GLFW_KEY_A) == GLFW_TRYE) movement.x -= 1;
-	//if (glfwGetKey(GLFW_KEY_S) == GLFW_TRYE) movement.z -= 1;
-	//if (glfwGetKey(GLFW_KEY_D) == GLFW_TRYE) movement.x += 1;
-	//
-	//m_camera.Translate(movement * m_speed * deltaTime);
+	float3 movement = float3();
+	if (key == GLFW_KEY_Q) movement.y += 1;
+	if (key == GLFW_KEY_E) movement.y += -1;
+	if (key == GLFW_KEY_W) movement.z += 1;
+	if (key == GLFW_KEY_A) movement.x -= 1;
+	if (key == GLFW_KEY_S) movement.z -= 1;
+	if (key == GLFW_KEY_D) movement.x += 1;
+
+	float rot = 0;
+	if (key == GLFW_KEY_LEFT) rot -= speed * dt;
+	if (key == GLFW_KEY_RIGHT) rot += speed *dt;
+	
+
+	camera = camera * camera.RotateY(rot) * mat4::Translate(movement * speed * dt);
 }
