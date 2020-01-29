@@ -620,6 +620,14 @@ bool operator==( const mat4 &a, const mat4 &b )
 	return true;
 }
 bool operator!=( const mat4 &a, const mat4 &b ) { return !(a == b); }
+float3 operator*(const mat4& a, const float3& b)
+{
+	return make_float3(a * make_float4(b));
+}
+float3 operator*(const float3& a, const mat4& b)
+{
+	return make_float3(make_float4(a) * b);
+}
 float4 operator*( const mat4 &a, const float4 &b )
 {
 	return make_float4( a.cell[0] * b.x + a.cell[1] * b.y + a.cell[2] * b.z + a.cell[3] * b.w,

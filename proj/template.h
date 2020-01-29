@@ -44,6 +44,7 @@ struct ALIGN( 16 ) uint4 { uint x, y, z, w; };
 struct ALIGN( 16 ) float4 { float x, y, z, w; };
 struct ALIGN( 4 ) uchar4 { uchar x, y, z, w; };
 
+
 // Fatal error reporting (with a pretty window)
 #define FATALERROR( fmt, ... ) FatalError( "Error on line %d of %s: " fmt "\n", __LINE__, __FILE__, ##__VA_ARGS__ )
 #define FATALERROR_IF( condition, fmt, ... ) do { if ( ( condition ) ) FATALERROR( fmt, ##__VA_ARGS__ ); } while ( 0 )
@@ -810,6 +811,8 @@ mat4 operator * ( const mat4& a, const float s );
 mat4 operator * ( const float s, const mat4& a );
 bool operator == ( const mat4& a, const mat4& b );
 bool operator != ( const mat4& a, const mat4& b );
+float3 operator * (const mat4& a, const float3& b);
+float3 operator * (const float3& a, const mat4& b);
 float4 operator * ( const mat4& a, const float4& b );
 float4 operator * ( const float4& a, const mat4& b );
 
