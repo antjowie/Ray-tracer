@@ -17,7 +17,8 @@ struct PrimaryHit
     bool isHit = false;
     float t = 0.f;
 
-    const Primitive* prim;
+    const Model* model;
+    const Mesh* mesh;
     float3 hit;
     float3 surfaceNormal;
 };
@@ -26,4 +27,3 @@ struct PrimaryHit
 // Free functions
 // ------------
 void Render(const mat4& t, Surface& screen, const Scene& scene);
-Pixel Trace(const Ray &ray, const Scene& scene);

@@ -102,8 +102,10 @@ using namespace Tmpl8;
 // #include "my_include.h"
 
 // Raytracer stuff
+#include "model.h"
 #include "scene.h"
 #include "tiny_gltf.h"
+#include "asset_loader.h"
 
 // Game
 #include "game.h"				// game class

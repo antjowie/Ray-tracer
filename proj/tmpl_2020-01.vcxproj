@@ -119,6 +119,7 @@
   </ItemDefinitionGroup>
   <!-- END Custom section -->
   <ItemGroup>
+    <ClCompile Include="asset_loader.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="lib\imgui\imgui.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">precomp.h</PrecompiledHeaderFile>
@@ -158,9 +159,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="asset_loader.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="lib\imgui\imgui.h" />
+    <ClInclude Include="model.h" />
     <ClInclude Include="precomp.h" />
     <ClInclude Include="raytracer.h" />
     <ClInclude Include="scene.h" />

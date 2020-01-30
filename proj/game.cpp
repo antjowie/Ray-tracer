@@ -7,7 +7,8 @@ void Game::Init()
 {
 	//scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
 	//scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
-	scene.Add("assets/Box/glTF/Box.gltf");
+	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf"));
+	//scene.Add(LoadGLTF("assets/Duck/glTF/Duck.gltf"));
 
 	dt = 0;
 	speed = 10.f;

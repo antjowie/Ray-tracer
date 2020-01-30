@@ -31,6 +31,7 @@
     <ClCompile Include="tiny_gltf_build.cpp">
       <Filter>tiny_gltf</Filter>
     </ClCompile>
+    <ClCompile Include="asset_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />
@@ -58,6 +59,8 @@
     <ClInclude Include="json.hpp">
       <Filter>tiny_gltf</Filter>
     </ClInclude>
+    <ClInclude Include="model.h" />
+    <ClInclude Include="asset_loader.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="template code">
