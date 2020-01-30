@@ -8,8 +8,8 @@
 // do not include headers in header files (ever).
 
 // Default screen resolution
-#define SCRWIDTH 512
-#define SCRHEIGHT 384
+#define SCRWIDTH 512//512
+#define SCRHEIGHT 384//384
 
 // C++ headers
 #include <chrono>
@@ -108,8 +108,8 @@ using namespace Tmpl8;
 #include "asset_loader.h"
 
 // Game
-#include "game.h"				// game class
 #include "raytracer.h"
+#include "game.h"				// game class
 
 // clang-format on
 

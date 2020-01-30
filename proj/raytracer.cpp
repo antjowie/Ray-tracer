@@ -84,7 +84,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
     return ret;
 }
 
-void Render(const mat4& t, Surface& screen, const Scene& scene)
+void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
 {
     // Calculate eye and screen
     float3 p0 = t.TransformPoint(make_float3(-1, 1, 1)); // top-left

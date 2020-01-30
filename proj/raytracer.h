@@ -23,7 +23,12 @@ struct PrimaryHit
     float3 surfaceNormal;
 };
 
-// ------------
-// Free functions
-// ------------
-void Render(const mat4& t, Surface& screen, const Scene& scene);
+class Renderer
+{
+public:
+    void Render(const mat4& t, Surface& screen, const Scene& scene);
+
+    unsigned threadCount;
+    unsigned squareX;
+    unsigned squareY;
+};
