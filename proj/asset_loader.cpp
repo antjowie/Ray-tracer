@@ -576,39 +576,41 @@ Model LoadGLTF(const char* path)
             }
             }
 
-            /*
+            
             // bbox :
             v3f bCenter;
             bCenter.x = 0.5f * (pMax.x - pMin.x) + pMin.x;
             bCenter.y = 0.5f * (pMax.y - pMin.y) + pMin.y;
             bCenter.z = 0.5f * (pMax.z - pMin.z) + pMin.z;
+            mesh.bb.bmin3 = (make_float3(pMin.x, pMin.y, pMin.z));
+            mesh.bb.bmax3 = (make_float3(pMax.x, pMax.y, pMax.z));
 
-            for (size_t v = 0; v < loadedMesh.vertices.size() / 3; v++) {
-                loadedMesh.vertices[3 * v + 0] -= bCenter.x;
-                loadedMesh.vertices[3 * v + 1] -= bCenter.y;
-                loadedMesh.vertices[3 * v + 2] -= bCenter.z;
-            }
+            //for (size_t v = 0; v < mesh.vertices.size() / 3; v++) {
+            //    mesh.vertices[3 * v + 0] -= bCenter.x;
+            //    mesh.vertices[3 * v + 1] -= bCenter.y;
+            //    mesh.vertices[3 * v + 2] -= bCenter.z;
+            //}
 
-            loadedMesh.pivot_xform[0][0] = 1.0f;
-            loadedMesh.pivot_xform[0][1] = 0.0f;
-            loadedMesh.pivot_xform[0][2] = 0.0f;
-            loadedMesh.pivot_xform[0][3] = 0.0f;
+            //loadedMesh.pivot_xform[0][0] = 1.0f;
+            //loadedMesh.pivot_xform[0][1] = 0.0f;
+            //loadedMesh.pivot_xform[0][2] = 0.0f;
+            //loadedMesh.pivot_xform[0][3] = 0.0f;
 
-            loadedMesh.pivot_xform[1][0] = 0.0f;
-            loadedMesh.pivot_xform[1][1] = 1.0f;
-            loadedMesh.pivot_xform[1][2] = 0.0f;
-            loadedMesh.pivot_xform[1][3] = 0.0f;
+            //loadedMesh.pivot_xform[1][0] = 0.0f;
+            //loadedMesh.pivot_xform[1][1] = 1.0f;
+            //loadedMesh.pivot_xform[1][2] = 0.0f;
+            //loadedMesh.pivot_xform[1][3] = 0.0f;
 
-            loadedMesh.pivot_xform[2][0] = 0.0f;
-            loadedMesh.pivot_xform[2][1] = 0.0f;
-            loadedMesh.pivot_xform[2][2] = 1.0f;
-            loadedMesh.pivot_xform[2][3] = 0.0f;
+            //loadedMesh.pivot_xform[2][0] = 0.0f;
+            //loadedMesh.pivot_xform[2][1] = 0.0f;
+            //loadedMesh.pivot_xform[2][2] = 1.0f;
+            //loadedMesh.pivot_xform[2][3] = 0.0f;
 
-            loadedMesh.pivot_xform[3][0] = bCenter.x;
-            loadedMesh.pivot_xform[3][1] = bCenter.y;
-            loadedMesh.pivot_xform[3][2] = bCenter.z;
-            loadedMesh.pivot_xform[3][3] = 1.0f;
-            */
+            //loadedMesh.pivot_xform[3][0] = bCenter.x;
+            //loadedMesh.pivot_xform[3][1] = bCenter.y;
+            //loadedMesh.pivot_xform[3][2] = bCenter.z;
+            //loadedMesh.pivot_xform[3][3] = 1.0f;
+            
 
             /*
             // TODO handle materials

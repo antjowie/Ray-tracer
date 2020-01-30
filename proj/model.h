@@ -8,6 +8,10 @@ struct Mesh
 {
     std::vector<float> vertices;
     std::vector<unsigned> indices;
+    
+    // NOTE This is in local space
+    aabb bb;
+
     Pixel color;
 };
 

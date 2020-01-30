@@ -3,6 +3,8 @@
 
 #pragma once
 
+extern GLFWwindow* window;
+
 // Basic types
 typedef unsigned char uchar;
 typedef unsigned int uint;

@@ -20,8 +20,8 @@ extern "C"
 }
 #endif
 
-static GLFWwindow* window = 0;
 static bool hasFocus = true, running = true;
+GLFWwindow* window = 0;
 static Game* game = 0;
 static GLTexture* renderTarget = 0;
 static int scrwidth = 0, scrheight = 0;

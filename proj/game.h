@@ -14,11 +14,13 @@ public:
 	void MouseDown( int button ){};
 	void MouseMove( int x, int y ){};
 	void KeyUp( int key ){};
-	void KeyDown( int key );
+	void KeyDown(int key) {};
 	
 	Surface* screen;
 
 private:
+	void MoveCamera();
+
 	Scene scene;
 
 	float dt;
