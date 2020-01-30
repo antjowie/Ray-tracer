@@ -107,12 +107,21 @@ void Render(const mat4& t, Surface& screen, const Scene& scene)
             Ray ray;
             ray.origin = E;
             ray.dir = D;
-            //Pixel c = Trace(ray,scene).isHit ? 0xffffff : 0x0;
-
-            float3 normalizedColor = ray.dir * 0xff;
-            Pixel c = ((static_cast<uint>(std::fabsf(normalizedColor.x)) & 0xFF)) |
-                ((static_cast<uint>(std::fabsf(normalizedColor.y)) & 0xFF) << 8) |
-                ((static_cast<uint>(std::fabsf(normalizedColor.z)) & 0xFF) << 16);
+            
+            auto hit = Trace(ray, scene);
+            Pixel c;
+            
+            if (hit.isHit)
+            {
+                c = 0xffffff;
+            }
+            else
+            {
+                float3 normalizedColor = ray.dir * 0xff;
+                c = ((static_cast<uint>(std::fabsf(normalizedColor.x)) & 0xFF)) |
+                    ((static_cast<uint>(std::fabsf(normalizedColor.y)) & 0xFF) << 8) |
+                    ((static_cast<uint>(std::fabsf(normalizedColor.z)) & 0xFF) << 16);
+            }
 
             screen.Plot(x, y, c);
         }
