@@ -5,8 +5,8 @@
 // -----------------------------------------------------------
 void Game::Init()
 {
-	scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
-	scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
+	//scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
+	//scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
 	scene.Add("assets/Box/glTF/Box.gltf");
 
 	dt = 0;
@@ -49,5 +49,5 @@ void Game::KeyDown(int key)
 	if (key == GLFW_KEY_RIGHT) rot += speed *dt;
 	
 
-	camera = camera * camera.RotateY(rot) * mat4::Translate(movement * speed * dt);
+	camera = camera * camera.RotateY(rot) * mat4::Translate(movement * speed * clamp(dt,0.f,1.f));
 }
