@@ -38,8 +38,9 @@ void Game::Tick(float deltaTime)
 void Game::KeyDown(int key)
 {
 	float3 movement = float3();
-	if (key == GLFW_KEY_Q) movement.y += 1;
-	if (key == GLFW_KEY_E) movement.y += -1;
+	if (key == GLFW_KEY_Q) movement.y -= 1;
+	if (key == GLFW_KEY_E) movement.y += 1;
+
 	if (key == GLFW_KEY_W) movement.z += 1;
 	if (key == GLFW_KEY_A) movement.x -= 1;
 	if (key == GLFW_KEY_S) movement.z -= 1;
