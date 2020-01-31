@@ -55,6 +55,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
             const auto& ind = mesh.indices;
 
             // Iterate over 9 indices per loop
+            // i is the index that we currently are at
             for (size_t i = 0; i < ind.size(); i += 3)
             {
                 // Create vertex from 3 indicess
@@ -76,6 +77,13 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
                         ret = h;
                         ret.model = &model;
                         ret.mesh = &mesh;
+
+
+                        ret.surfaceNormal = make_float3(
+                                mesh.faces[i / 3 + 0],
+                                mesh.faces[i / 3 + 1],
+                                mesh.faces[i / 3 + 2]
+                            );
                     }
                 }
             }
@@ -128,8 +136,9 @@ void RenderArea(
                     ((static_cast<uint>(std::fabsf(normalizedColor.z)) & 0xFF) << 16);
             }
 
+            
             // Set color value
-            buffer[i * bw + j] = c;
+            buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }
 

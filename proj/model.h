@@ -13,7 +13,8 @@ struct Mesh
 {
     std::vector<float> vertices;
     std::vector<unsigned> indices;
-    
+
+    std::vector<float> faces;
 
     aabb bb; // Local space
     Material mat;
