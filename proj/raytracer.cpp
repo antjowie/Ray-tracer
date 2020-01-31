@@ -116,11 +116,15 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
         if(!shit.isHit)
         {
             // This is very incorrect but temp
-            finalColor += ret.mesh->mat.color;
-        }
+            float l = 1.f; // Light intensity
 
+            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ray.dir,shadow.dir));
+        }
     }
+
     ret.color = finalColor;
+    
+    
     return ret;
 }
 
