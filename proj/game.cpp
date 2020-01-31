@@ -5,22 +5,6 @@
 // -----------------------------------------------------------
 void Game::Init()
 {
-	auto obs = executor.make_observer<tf::ExecutorObserver>();
-
-	for(int i = 0; i < 20; i++)
-		AddTask([i]() {std::cout << i << "\n"; });
-	RunTasks();
-	WaitForAll();
-	{
-		std::ofstream of("dump.json");
-		obs->dump(of);
-	}
-
-	return;
-
-
-
-
 	renderer.threadCount = std::thread::hardware_concurrency();
 	renderer.squareX = 16;
 	renderer.squareY = 16;
@@ -31,7 +15,7 @@ void Game::Init()
 	//scene.Add(LoadGLTF("assets/Duck/glTF/Duck.gltf"));
 	std::cout << "-----\nDone loading" << '\n';
 
-	constexpr int x = 1280;
+	constexpr int x = 720;
 	constexpr int y = 720;
 	glfwSetWindowSize(window, x, y);
 	

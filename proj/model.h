@@ -4,15 +4,19 @@
  * Data structure for models and meshes
  */
 
+struct Material
+{
+    Pixel color;
+};
+
 struct Mesh
 {
     std::vector<float> vertices;
     std::vector<unsigned> indices;
     
-    // NOTE This is in local space
-    aabb bb;
 
-    Pixel color;
+    aabb bb; // Local space
+    Material mat;
 };
 
 struct Model

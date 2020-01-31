@@ -196,19 +196,21 @@ Model LoadGLTF(const char* path)
     Model object;
 
     // Iterate through all the meshes in the glTF file
-    for (const auto& gltfMesh : model.meshes) {
+    for (const auto& gltfMesh : model.meshes)
+    {
         std::cout << "Current mesh has " << gltfMesh.primitives.size()
             << " primitives:\n";
 
         // Create new mesh
         object.meshes.push_back({});
         Mesh& mesh = object.meshes.back();
-        
+
         // To store the min and max of the buffer (as 3D vector of floats)
         v3f pMin = {}, pMax = {};
 
         // For each primitive
-        for (const auto& meshPrimitive : gltfMesh.primitives) {
+        for (const auto& meshPrimitive : gltfMesh.primitives)
+        {
             // Boolean used to check if we have converted the vertex buffer format
             bool convertedToTriangleList = false;
 
@@ -267,12 +269,14 @@ Model LoadGLTF(const char* path)
                     break;
                 }
             }
-            
+
             // Convert indices
             const auto& indices = *indicesArrayPtr;
-            if (indicesArrayPtr) {
+            if (indicesArrayPtr)
+            {
                 std::cout << "indices: ";
-                for (size_t i(0); i < indicesArrayPtr->size(); ++i) {
+                for (size_t i(0); i < indicesArrayPtr->size(); ++i)
+                {
                     //std::cout << indices[i] << " ";
                     mesh.indices.push_back(indices[i]);
                     //loadedMesh.faces.push_back(indices[i]);
@@ -283,49 +287,12 @@ Model LoadGLTF(const char* path)
             // ----------------------
             // Intepret vertices with indices to load mesh
             // ----------------------
-            switch (meshPrimitive.mode) {
-                /*
-                // We re-arrange the indices so that it describe a simple list of
-                // triangles
-            case TINYGLTF_MODE_TRIANGLE_FAN:
-                if (!convertedToTriangleList) {
-                    std::cout << "TRIANGLE_FAN\n";
-                    // This only has to be done once per primitive
-                    convertedToTriangleList = true;
-
-                    // We steal the guts of the vector
-                    auto triangleFan = std::move(loadedMesh.faces);
-                    loadedMesh.faces.clear();
-
-                    // Push back the indices that describe just one triangle one by one
-                    for (size_t i{ 2 }; i < triangleFan.size(); ++i) {
-                        loadedMesh.faces.push_back(triangleFan[0]);
-                        loadedMesh.faces.push_back(triangleFan[i - 1]);
-                        loadedMesh.faces.push_back(triangleFan[i]);
-                    }
-                }
-            case TINYGLTF_MODE_TRIANGLE_STRIP:
-                if (!convertedToTriangleList) {
-                    std::cout << "TRIANGLE_STRIP\n";
-                    // This only has to be done once per primitive
-                    convertedToTriangleList = true;
-
-                    auto triangleStrip = std::move(loadedMesh.faces);
-                    loadedMesh.faces.clear();
-
-                    for (size_t i{ 2 }; i < triangleStrip.size(); ++i) {
-                        loadedMesh.faces.push_back(triangleStrip[i - 2]);
-                        loadedMesh.faces.push_back(triangleStrip[i - 1]);
-                        loadedMesh.faces.push_back(triangleStrip[i]);
-                    }
-                }
-                */
-            case TINYGLTF_MODE_TRIANGLES:  // this is the simpliest case to handle
-
+            switch (meshPrimitive.mode)
             {
-                std::cout << "TRIANGLES\n";
-
-                for (const auto& attribute : meshPrimitive.attributes) {
+            case TINYGLTF_MODE_TRIANGLES:  // this is the simpliest case to handle
+            {
+                for (const auto& attribute : meshPrimitive.attributes)
+                {
                     const auto attribAccessor = model.accessors[attribute.second];
                     const auto& bufferView =
                         model.bufferViews[attribAccessor.bufferView];
@@ -339,7 +306,10 @@ Model LoadGLTF(const char* path)
                         << " and stride " << byte_stride << " bytes\n";
 
                     std::cout << "attribute string is : " << attribute.first << '\n';
-                    if (attribute.first == "POSITION") {
+
+                    // -- Load attributes -- //
+                    if (attribute.first == "POSITION")
+                    {
                         std::cout << "found position attribute\n";
 
                         // get the position min/max for computing the boundingbox
@@ -350,275 +320,248 @@ Model LoadGLTF(const char* path)
                         pMax.y = attribAccessor.maxValues[1];
                         pMax.z = attribAccessor.maxValues[2];
 
-                        switch (attribAccessor.type) {
-                        case TINYGLTF_TYPE_VEC3: {
-                            switch (attribAccessor.componentType) {
+                        switch (attribAccessor.type)
+                        {
+                        case TINYGLTF_TYPE_VEC3:
+                        {
+                            switch (attribAccessor.componentType)
+                            {
                             case TINYGLTF_COMPONENT_TYPE_FLOAT:
+                            {
                                 std::cout << "Type is FLOAT\n";
                                 // 3D vector of float
-                                v3fArray positions(
-                                    arrayAdapter<v3f>(dataPtr, count, byte_stride));
+                                v3fArray positions(arrayAdapter<v3f>(dataPtr, count, byte_stride));
 
-                                //std::cout << "positions's size : " << positions.size()
-                                //    << '\n';
-
-                                for (size_t i{ 0 }; i < positions.size(); ++i) {
+                                for (size_t i{ 0 }; i < positions.size(); ++i)
+                                {
                                     const auto v = positions[i];
-                                    //std::cout << "positions[" << i << "]: (" << v.x << ", "
-                                    //    << v.y << ", " << v.z << ")\n";
-                                    
+
                                     mesh.vertices.push_back(v.x);
                                     mesh.vertices.push_back(v.y);
                                     mesh.vertices.push_back(v.z);
                                 }
                             }
-                            break;
-                        case TINYGLTF_COMPONENT_TYPE_DOUBLE: {
-                            std::cout << "Type is DOUBLE\n";
+                            }
+                        }
+                        }
+                        /*
+                        if (attribute.first == "NORMAL") {
+                            std::cout << "found normal attribute\n";
+
                             switch (attribAccessor.type) {
                             case TINYGLTF_TYPE_VEC3: {
-                                v3dArray positions(
-                                    arrayAdapter<v3d>(dataPtr, count, byte_stride));
-                                for (size_t i{ 0 }; i < positions.size(); ++i) {
-                                    const auto v = positions[i];
-                                    //std::cout << "positions[" << i << "]: (" << v.x
-                                    //    << ", " << v.y << ", " << v.z << ")\n";
-                                    
-                                    mesh.vertices.push_back(v.x);
-                                    mesh.vertices.push_back(v.y);
-                                    mesh.vertices.push_back(v.z);
-                                }
-                            } break;
-                            default:
-                                // TODO Handle error
-                                break;
-                            }
-                            break;
-                        default:
-                            break;
-                        }
-                        } break;
-                        }
-                    }
-
-                    /*
-                    if (attribute.first == "NORMAL") {
-                        std::cout << "found normal attribute\n";
-
-                        switch (attribAccessor.type) {
-                        case TINYGLTF_TYPE_VEC3: {
-                            std::cout << "Normal is VEC3\n";
-                            switch (attribAccessor.componentType) {
-                            case TINYGLTF_COMPONENT_TYPE_FLOAT: {
-                                std::cout << "Normal is FLOAT\n";
-                                v3fArray normals(
-                                    arrayAdapter<v3f>(dataPtr, count, byte_stride));
-
-                                // IMPORTANT: We need to reorder normals (and texture
-                                // coordinates into "facevarying" order) for each face
-
-                                // For each triangle :
-                                for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
-                                    // get the i'th triange's indexes
-                                    auto f0 = indices[3 * i + 0];
-                                    auto f1 = indices[3 * i + 1];
-                                    auto f2 = indices[3 * i + 2];
-
-                                    // get the 3 normal vectors for that face
-                                    v3f n0, n1, n2;
-                                    n0 = normals[f0];
-                                    n1 = normals[f1];
-                                    n2 = normals[f2];
-
-                                    // Put them in the array in the correct order
-                                    loadedMesh.facevarying_normals.push_back(n0.x);
-                                    loadedMesh.facevarying_normals.push_back(n0.y);
-                                    loadedMesh.facevarying_normals.push_back(n0.z);
-
-                                    loadedMesh.facevarying_normals.push_back(n1.x);
-                                    loadedMesh.facevarying_normals.push_back(n1.y);
-                                    loadedMesh.facevarying_normals.push_back(n1.z);
-
-                                    loadedMesh.facevarying_normals.push_back(n2.x);
-                                    loadedMesh.facevarying_normals.push_back(n2.y);
-                                    loadedMesh.facevarying_normals.push_back(n2.z);
-                                }
-                            } break;
-                            case TINYGLTF_COMPONENT_TYPE_DOUBLE: {
-                                std::cout << "Normal is DOUBLE\n";
-                                v3dArray normals(
-                                    arrayAdapter<v3d>(dataPtr, count, byte_stride));
-
-                                // IMPORTANT: We need to reorder normals (and texture
-                                // coordinates into "facevarying" order) for each face
-
-                                // For each triangle :
-                                for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
-                                    // get the i'th triange's indexes
-                                    auto f0 = indices[3 * i + 0];
-                                    auto f1 = indices[3 * i + 1];
-                                    auto f2 = indices[3 * i + 2];
-
-                                    // get the 3 normal vectors for that face
-                                    v3d n0, n1, n2;
-                                    n0 = normals[f0];
-                                    n1 = normals[f1];
-                                    n2 = normals[f2];
-
-                                    // Put them in the array in the correct order
-                                    loadedMesh.facevarying_normals.push_back(n0.x);
-                                    loadedMesh.facevarying_normals.push_back(n0.y);
-                                    loadedMesh.facevarying_normals.push_back(n0.z);
-
-                                    loadedMesh.facevarying_normals.push_back(n1.x);
-                                    loadedMesh.facevarying_normals.push_back(n1.y);
-                                    loadedMesh.facevarying_normals.push_back(n1.z);
-
-                                    loadedMesh.facevarying_normals.push_back(n2.x);
-                                    loadedMesh.facevarying_normals.push_back(n2.y);
-                                    loadedMesh.facevarying_normals.push_back(n2.z);
-                                }
-                            } break;
-                            default:
-                                std::cerr << "Unhandeled componant type for normal\n";
-                            }
-                        } break;
-                        default:
-                            std::cerr << "Unhandeled vector type for normal\n";
-                        }
-
-                        // Face varying comment on the normals is also true for the UVs
-                        if (attribute.first == "TEXCOORD_0") {
-                            std::cout << "Found texture coordinates\n";
-
-                            switch (attribAccessor.type) {
-                            case TINYGLTF_TYPE_VEC2: {
-                                std::cout << "TEXTCOORD is VEC2\n";
+                                std::cout << "Normal is VEC3\n";
                                 switch (attribAccessor.componentType) {
                                 case TINYGLTF_COMPONENT_TYPE_FLOAT: {
-                                    std::cout << "TEXTCOORD is FLOAT\n";
-                                    v2fArray uvs(
-                                        arrayAdapter<v2f>(dataPtr, count, byte_stride));
+                                    std::cout << "Normal is FLOAT\n";
+                                    v3fArray normals(
+                                        arrayAdapter<v3f>(dataPtr, count, byte_stride));
 
+                                    // IMPORTANT: We need to reorder normals (and texture
+                                    // coordinates into "facevarying" order) for each face
+
+                                    // For each triangle :
                                     for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
                                         // get the i'th triange's indexes
                                         auto f0 = indices[3 * i + 0];
                                         auto f1 = indices[3 * i + 1];
                                         auto f2 = indices[3 * i + 2];
 
-                                        // get the texture coordinates for each triangle's
-                                        // vertices
-                                        v2f uv0, uv1, uv2;
-                                        uv0 = uvs[f0];
-                                        uv1 = uvs[f1];
-                                        uv2 = uvs[f2];
+                                        // get the 3 normal vectors for that face
+                                        v3f n0, n1, n2;
+                                        n0 = normals[f0];
+                                        n1 = normals[f1];
+                                        n2 = normals[f2];
 
-                                        // push them in order into the mesh data
-                                        loadedMesh.facevarying_uvs.push_back(uv0.x);
-                                        loadedMesh.facevarying_uvs.push_back(uv0.y);
+                                        // Put them in the array in the correct order
+                                        loadedMesh.facevarying_normals.push_back(n0.x);
+                                        loadedMesh.facevarying_normals.push_back(n0.y);
+                                        loadedMesh.facevarying_normals.push_back(n0.z);
 
-                                        loadedMesh.facevarying_uvs.push_back(uv1.x);
-                                        loadedMesh.facevarying_uvs.push_back(uv1.y);
+                                        loadedMesh.facevarying_normals.push_back(n1.x);
+                                        loadedMesh.facevarying_normals.push_back(n1.y);
+                                        loadedMesh.facevarying_normals.push_back(n1.z);
 
-                                        loadedMesh.facevarying_uvs.push_back(uv2.x);
-                                        loadedMesh.facevarying_uvs.push_back(uv2.y);
+                                        loadedMesh.facevarying_normals.push_back(n2.x);
+                                        loadedMesh.facevarying_normals.push_back(n2.y);
+                                        loadedMesh.facevarying_normals.push_back(n2.z);
                                     }
-
                                 } break;
                                 case TINYGLTF_COMPONENT_TYPE_DOUBLE: {
-                                    std::cout << "TEXTCOORD is DOUBLE\n";
-                                    v2dArray uvs(
-                                        arrayAdapter<v2d>(dataPtr, count, byte_stride));
+                                    std::cout << "Normal is DOUBLE\n";
+                                    v3dArray normals(
+                                        arrayAdapter<v3d>(dataPtr, count, byte_stride));
 
+                                    // IMPORTANT: We need to reorder normals (and texture
+                                    // coordinates into "facevarying" order) for each face
+
+                                    // For each triangle :
                                     for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
                                         // get the i'th triange's indexes
                                         auto f0 = indices[3 * i + 0];
                                         auto f1 = indices[3 * i + 1];
                                         auto f2 = indices[3 * i + 2];
 
-                                        v2d uv0, uv1, uv2;
-                                        uv0 = uvs[f0];
-                                        uv1 = uvs[f1];
-                                        uv2 = uvs[f2];
+                                        // get the 3 normal vectors for that face
+                                        v3d n0, n1, n2;
+                                        n0 = normals[f0];
+                                        n1 = normals[f1];
+                                        n2 = normals[f2];
 
-                                        loadedMesh.facevarying_uvs.push_back(uv0.x);
-                                        loadedMesh.facevarying_uvs.push_back(uv0.y);
+                                        // Put them in the array in the correct order
+                                        loadedMesh.facevarying_normals.push_back(n0.x);
+                                        loadedMesh.facevarying_normals.push_back(n0.y);
+                                        loadedMesh.facevarying_normals.push_back(n0.z);
 
-                                        loadedMesh.facevarying_uvs.push_back(uv1.x);
-                                        loadedMesh.facevarying_uvs.push_back(uv1.y);
+                                        loadedMesh.facevarying_normals.push_back(n1.x);
+                                        loadedMesh.facevarying_normals.push_back(n1.y);
+                                        loadedMesh.facevarying_normals.push_back(n1.z);
 
-                                        loadedMesh.facevarying_uvs.push_back(uv2.x);
-                                        loadedMesh.facevarying_uvs.push_back(uv2.y);
+                                        loadedMesh.facevarying_normals.push_back(n2.x);
+                                        loadedMesh.facevarying_normals.push_back(n2.y);
+                                        loadedMesh.facevarying_normals.push_back(n2.z);
                                     }
                                 } break;
                                 default:
-                                    std::cerr << "unrecognized vector type for UV";
+                                    std::cerr << "Unhandeled componant type for normal\n";
                                 }
                             } break;
                             default:
-                                std::cerr << "unreconized componant type for UV";
+                                std::cerr << "Unhandeled vector type for normal\n";
+                            }
+
+                            // Face varying comment on the normals is also true for the UVs
+                            if (attribute.first == "TEXCOORD_0") {
+                                std::cout << "Found texture coordinates\n";
+
+                                switch (attribAccessor.type) {
+                                case TINYGLTF_TYPE_VEC2: {
+                                    std::cout << "TEXTCOORD is VEC2\n";
+                                    switch (attribAccessor.componentType) {
+                                    case TINYGLTF_COMPONENT_TYPE_FLOAT: {
+                                        std::cout << "TEXTCOORD is FLOAT\n";
+                                        v2fArray uvs(
+                                            arrayAdapter<v2f>(dataPtr, count, byte_stride));
+
+                                        for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
+                                            // get the i'th triange's indexes
+                                            auto f0 = indices[3 * i + 0];
+                                            auto f1 = indices[3 * i + 1];
+                                            auto f2 = indices[3 * i + 2];
+
+                                            // get the texture coordinates for each triangle's
+                                            // vertices
+                                            v2f uv0, uv1, uv2;
+                                            uv0 = uvs[f0];
+                                            uv1 = uvs[f1];
+                                            uv2 = uvs[f2];
+
+                                            // push them in order into the mesh data
+                                            loadedMesh.facevarying_uvs.push_back(uv0.x);
+                                            loadedMesh.facevarying_uvs.push_back(uv0.y);
+
+                                            loadedMesh.facevarying_uvs.push_back(uv1.x);
+                                            loadedMesh.facevarying_uvs.push_back(uv1.y);
+
+                                            loadedMesh.facevarying_uvs.push_back(uv2.x);
+                                            loadedMesh.facevarying_uvs.push_back(uv2.y);
+                                        }
+
+                                    } break;
+                                    case TINYGLTF_COMPONENT_TYPE_DOUBLE: {
+                                        std::cout << "TEXTCOORD is DOUBLE\n";
+                                        v2dArray uvs(
+                                            arrayAdapter<v2d>(dataPtr, count, byte_stride));
+
+                                        for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
+                                            // get the i'th triange's indexes
+                                            auto f0 = indices[3 * i + 0];
+                                            auto f1 = indices[3 * i + 1];
+                                            auto f2 = indices[3 * i + 2];
+
+                                            v2d uv0, uv1, uv2;
+                                            uv0 = uvs[f0];
+                                            uv1 = uvs[f1];
+                                            uv2 = uvs[f2];
+
+                                            loadedMesh.facevarying_uvs.push_back(uv0.x);
+                                            loadedMesh.facevarying_uvs.push_back(uv0.y);
+
+                                            loadedMesh.facevarying_uvs.push_back(uv1.x);
+                                            loadedMesh.facevarying_uvs.push_back(uv1.y);
+
+                                            loadedMesh.facevarying_uvs.push_back(uv2.x);
+                                            loadedMesh.facevarying_uvs.push_back(uv2.y);
+                                        }
+                                    } break;
+                                    default:
+                                        std::cerr << "unrecognized vector type for UV";
+                                    }
+                                } break;
+                                default:
+                                    std::cerr << "unreconized componant type for UV";
+                                }
                             }
                         }
+                        */
                     }
-                    */
+
+                    // -- Load materials -- //
+                    tinygltf::Material &mat = model.materials[meshPrimitive.material];
+
+                    // Color
+                    // Convert color to unsigned int
+                    auto color = mat.pbrMetallicRoughness.baseColorFactor;
+                    std::vector<uint> comp(4);
+                    std::transform(std::begin(color), std::end(color), std::begin(comp), [](double val)
+                    {return static_cast<uint>(val * 0xff); });
+
+                    mesh.mat.color = *static_cast<Pixel*>(comp.data());
                 }
-                break;
+            }
+            break;
 
             default:
                 std::cerr << "primitive mode not implemented";
                 break;
-
-                // These aren't triangles:
-            case TINYGLTF_MODE_POINTS:
-            case TINYGLTF_MODE_LINE:
-            case TINYGLTF_MODE_LINE_LOOP:
-                std::cerr << "primitive is not triangle based, ignoring";
-            }
             }
 
-            
+
             // bbox :
-            v3f bCenter;
-            bCenter.x = 0.5f * (pMax.x - pMin.x) + pMin.x;
-            bCenter.y = 0.5f * (pMax.y - pMin.y) + pMin.y;
-            bCenter.z = 0.5f * (pMax.z - pMin.z) + pMin.z;
-            mesh.bb.bmin3 = (make_float3(pMin.x, pMin.y, pMin.z));
-            mesh.bb.bmax3 = (make_float3(pMax.x, pMax.y, pMax.z));
+            {
+                v3f bCenter;
+                bCenter.x = 0.5f * (pMax.x - pMin.x) + pMin.x;
+                bCenter.y = 0.5f * (pMax.y - pMin.y) + pMin.y;
+                bCenter.z = 0.5f * (pMax.z - pMin.z) + pMin.z;
+                mesh.bb.bmin3 = (make_float3(pMin.x, pMin.y, pMin.z));
+                mesh.bb.bmax3 = (make_float3(pMax.x, pMax.y, pMax.z));
 
-            //for (size_t v = 0; v < mesh.vertices.size() / 3; v++) {
+                //for (size_t v = 0; v < mesh.vertices.size() / 3; v++) {
             //    mesh.vertices[3 * v + 0] -= bCenter.x;
             //    mesh.vertices[3 * v + 1] -= bCenter.y;
             //    mesh.vertices[3 * v + 2] -= bCenter.z;
             //}
 
-            //loadedMesh.pivot_xform[0][0] = 1.0f;
+                //loadedMesh.pivot_xform[0][0] = 1.0f;
             //loadedMesh.pivot_xform[0][1] = 0.0f;
             //loadedMesh.pivot_xform[0][2] = 0.0f;
             //loadedMesh.pivot_xform[0][3] = 0.0f;
 
-            //loadedMesh.pivot_xform[1][0] = 0.0f;
+                //loadedMesh.pivot_xform[1][0] = 0.0f;
             //loadedMesh.pivot_xform[1][1] = 1.0f;
             //loadedMesh.pivot_xform[1][2] = 0.0f;
             //loadedMesh.pivot_xform[1][3] = 0.0f;
 
-            //loadedMesh.pivot_xform[2][0] = 0.0f;
+                //loadedMesh.pivot_xform[2][0] = 0.0f;
             //loadedMesh.pivot_xform[2][1] = 0.0f;
             //loadedMesh.pivot_xform[2][2] = 1.0f;
             //loadedMesh.pivot_xform[2][3] = 0.0f;
 
-            //loadedMesh.pivot_xform[3][0] = bCenter.x;
+                //loadedMesh.pivot_xform[3][0] = bCenter.x;
             //loadedMesh.pivot_xform[3][1] = bCenter.y;
             //loadedMesh.pivot_xform[3][2] = bCenter.z;
-            //loadedMesh.pivot_xform[3][3] = 1.0f;
-            
-
-            /*
-            // TODO handle materials
-            for (size_t i{ 0 }; i < loadedMesh.faces.size(); ++i)
-                loadedMesh.material_ids.push_back(materials->at(0).id);
-
-            meshes->push_back(loadedMesh);
-            */
+            //loadedMesh.pivot_xform[3][3] = 1.0f;            
+            }
 
             std::cout << "Loaded vertice and indices: " << mesh.vertices.size() << " " << mesh.indices.size() << '\n';
         }

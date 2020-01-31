@@ -84,7 +84,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
     return ret;
 }
 
-void RenderArea(Pixel* buffer, int x, int y)
+void RenderArea(Pixel* buffer, uint x, uint y, uint w, uint h, uint bw, uint bh)
 {
 
 }
@@ -118,7 +118,7 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
             
             if (hit.isHit)
             {
-                c = 0xffffff;
+                c = hit.mesh->mat.color;
             }
             else
             {
