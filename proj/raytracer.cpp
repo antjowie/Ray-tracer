@@ -1,15 +1,12 @@
 #include "precomp.h"
 
 
-PrimaryHit TriangleIntersect(const Ray& ray, const float3* v3)
+PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& vertex1, const float3& vertex2)
 {
     PrimaryHit hit;
 
     //https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
     const float EPSILON = 0.0000001;
-    float3 vertex0 = v3[0];
-    float3 vertex1 = v3[1];
-    float3 vertex2 = v3[2];
     float3 edge1, edge2, h, s, q;
     float a, f, u, v;
     edge1 = vertex1 - vertex0;
@@ -42,6 +39,8 @@ PrimaryHit TriangleIntersect(const Ray& ray, const float3* v3)
         return hit;
 }
 
+// I think the template optimizes the bool call since it generates a function definition
+template <bool earlyQuit = false>
 PrimaryHit Trace(const Ray& ray, const Scene& scene)
 {
     float d = -1.f;
@@ -58,17 +57,19 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
             // i is the index that we currently are at
             for (size_t i = 0; i < ind.size(); i += 3)
             {
-                // Create vertex from 3 indicess
                 float3 v[3];
+                // Create vertex from 3 indicess
                 for (size_t j = 0; j < 3; j++)
                 {
                     v[j] = make_float3(
-                        ver[ind[i + j] * 3 + 0], 
-                        ver[ind[i + j] * 3 + 1], 
+                        ver[ind[i + j] * 3 + 0],
+                        ver[ind[i + j] * 3 + 1],
                         ver[ind[i + j] * 3 + 2]);
                 }
+                
+                auto h = TriangleIntersect(
+                    ray, v[0], v[1], v[2]);
 
-                auto h = TriangleIntersect(ray, v);
                 if (h.isHit)
                 {
                     // If no hit yet
@@ -78,12 +79,16 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
                         ret.model = &model;
                         ret.mesh = &mesh;
 
-
                         ret.surfaceNormal = make_float3(
                                 mesh.faces[i / 3 + 0],
                                 mesh.faces[i / 3 + 1],
                                 mesh.faces[i / 3 + 2]
                             );
+                    }
+
+                    if (earlyQuit)
+                    {
+                        return ret;
                     }
                 }
             }
@@ -126,11 +131,7 @@ void RenderArea(
 
             if (hit.isHit)
             {
-                c = hit.mesh->mat.color;
-                //auto col = lerp(make_float3(0), make_float3(0xff), dot(ray.dir * -1.f, hit.surfaceNormal));
-                //c = ((static_cast<uint>(std::fabsf(col.x)) & 0xFF)) |
-                //    ((static_cast<uint>(std::fabsf(col.y)) & 0xFF) << 8) |
-                //    ((static_cast<uint>(std::fabsf(col.z)) & 0xFF) << 16);
+                c = hit.mesh->mat.color;//ScaleColor(hit.mesh->mat.color,hit.t);
             }
             else
             {
