@@ -11,9 +11,39 @@ void Game::Init()
 	renderer.squareX = 16;
 	renderer.squareY = 16;
 
-	//scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
-	//scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
 	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf",mat4::Translate(0,0,4)));
+	
+	// Make a floor
+	Model fmodel;
+	Mesh fmesh;
+	fmesh.vertices.push_back(-30);
+	fmesh.vertices.push_back(-1.5f);
+	fmesh.vertices.push_back(-30);
+	
+	fmesh.vertices.push_back(30);
+	fmesh.vertices.push_back(-1.5f);
+	fmesh.vertices.push_back(-30);
+
+	fmesh.vertices.push_back(0);
+	fmesh.vertices.push_back(-1.5f);
+	fmesh.vertices.push_back(30);
+
+	// https://stackoverflow.com/questions/17694579/use-stdfill-to-populate-vector-with-increasing-numbers
+	// Found it here, thought is was funny
+	std::generate_n(std::back_inserter(fmesh.indices), fmesh.vertices.size()/3,
+		[i = 0]() mutable {return i++; });
+
+	std::generate_n(std::back_inserter(fmesh.faces), fmesh.vertices.size(),
+		[]() {return 0; });
+
+	fmesh.mat.color = 0x404040;
+
+	fmodel.meshes.push_back(fmesh);
+	scene.Add(std::move(fmodel));
+
+	// Add a light
+	scene.Add(PointLight{ make_float3(-1,2,2),20.f });
+
 	//scene.Add(LoadGLTF("assets/Duck/glTF/Duck.gltf"));
 	std::cout << "-----\nDone loading" << '\n';
 

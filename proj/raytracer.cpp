@@ -46,6 +46,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
     float d = -1.f;
     PrimaryHit ret;
 
+    // Get closest intersection
     for (const auto& model : scene.GetModels())
     {
         for (const auto& mesh : model.meshes)
@@ -95,6 +96,31 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
             }
         }
     }
+
+    // No hit
+    if (!ret.isHit)
+    {
+        ret.color = ToPixel(ray.dir * 0xff);
+        return ret;
+    }
+
+    // Cast shadow
+    Pixel finalColor = 0;
+    for(const auto& light: scene.GetLights())
+    {
+        float3 dir = normalize(light.pos - ret.hit);
+        Ray shadow{ ret.hit + dir*0.0001f, dir };
+
+        // Pronounced as s-hit
+        auto shit = Trace<true>(shadow, scene);
+        if(!shit.isHit)
+        {
+            // This is very incorrect but temp
+            finalColor += ret.mesh->mat.color;
+        }
+
+    }
+    ret.color = finalColor;
     return ret;
 }
 
@@ -128,23 +154,7 @@ void RenderArea(
             ray.dir = D;
 
             auto hit = Trace(ray, scene);
-            Pixel c;
-
-            if (hit.isHit)
-            {
-                c = hit.mesh->mat.color;//ScaleColor(hit.mesh->mat.color,hit.t);
-            }
-            else
-            {
-                float3 normalizedColor = ray.dir * 0xff;
-                c = ((static_cast<uint>(std::fabsf(normalizedColor.x)) & 0xFF)) |
-                    ((static_cast<uint>(std::fabsf(normalizedColor.y)) & 0xFF) << 8) |
-                    ((static_cast<uint>(std::fabsf(normalizedColor.z)) & 0xFF) << 16);
-            }
-
-            
-            // Set color value
-            buffer[j * bw + i] = c;
+            buffer[j * bw + i] = hit.color;
             //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }

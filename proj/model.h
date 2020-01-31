@@ -25,3 +25,11 @@ struct Model
     mat4 transform = mat4::Identity();
     std::vector<Mesh> meshes;
 };
+
+struct PointLight
+{
+    float3 pos;
+    float intensity;
+
+    Pixel color = 0xFFFFFFFF;
+};
