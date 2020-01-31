@@ -33,9 +33,13 @@ void Game::Init()
 	std::generate_n(std::back_inserter(fmesh.indices), fmesh.vertices.size()/3,
 		[i = 0]() mutable {return i++; });
 
-	std::generate_n(std::back_inserter(fmesh.faces), fmesh.vertices.size(),
-		[]() {return 0; });
-
+	for (int i = 0; i < fmesh.vertices.size() / 3; i++)
+	{
+		fmesh.faces.push_back(0);
+		fmesh.faces.push_back(1);
+		fmesh.faces.push_back(0);
+	}
+	
 	fmesh.mat.color = 0x404040;
 
 	fmodel.meshes.push_back(fmesh);

@@ -11,8 +11,8 @@ struct Material
 
 struct Mesh
 {
-    std::vector<float> vertices;
-    std::vector<unsigned> indices;
+    std::vector<float> vertices; // x y z
+    std::vector<unsigned> indices; // points to 1 vertex, so 3 elements
 
     std::vector<float> faces;
 
