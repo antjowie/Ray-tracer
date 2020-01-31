@@ -151,7 +151,7 @@ namespace
 }
 
 
-Model LoadGLTF(const char* path)
+Model LoadGLTF(const char* path, const mat4& t)
 {
     //https://github.com/syoyo/tinygltf/blob/master/examples/raytrace/gltf-loader.cc
     // TODO(syoyo): Texture
@@ -334,7 +334,9 @@ Model LoadGLTF(const char* path)
 
                                 for (size_t i{ 0 }; i < positions.size(); ++i)
                                 {
-                                    const auto v = positions[i];
+                                    const auto va = positions[i];
+                                    float3 v = make_float3(va.x, va.y, va.z);
+                                    v = t.TransformPoint(v);
 
                                     mesh.vertices.push_back(v.x);
                                     mesh.vertices.push_back(v.y);

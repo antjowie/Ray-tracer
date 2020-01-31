@@ -41,7 +41,7 @@ PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3
 
 // I think the template optimizes the bool call since it generates a function definition
 template <bool earlyQuit = false>
-PrimaryHit Trace(const Ray& ray, const Scene& scene)
+PrimaryHit Trace(Ray ray, const Scene& scene)
 {
     float d = -1.f;
     PrimaryHit ret;
@@ -50,6 +50,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
     {
         for (const auto& mesh : model.meshes)
         {
+            
             const auto& ver = mesh.vertices;
             const auto& ind = mesh.indices;
 
