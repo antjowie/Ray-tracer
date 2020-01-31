@@ -103,17 +103,17 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
  * hw: buffer height
  */
 void RenderArea(
-    Pixel* buffer, float3 e, float3 topLeft, float3 right, float3 down, 
-    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
+    Pixel* buffer, float3 e, float3 topLeft, float3 right, float3 down,
+    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene, int index)
 {
     // Iterate over area
-    for (uint i = y; i < y + h; i++)
+    for (uint j = y; j < y + h; j++)
     {
-        float v = (float)i / bh;
-        for (uint j = x; j < x + w; j++)
+        float v = (float)j / bh;
+        for (uint i = x; i < x + w; i++)
         {
             // Generate ray
-            float u = (float)j / bw;
+            float u = (float)i / bw;
             float3 P = topLeft + u * right + v * down;
             float3 D = normalize(P - e);
 
@@ -126,11 +126,11 @@ void RenderArea(
 
             if (hit.isHit)
             {
-                //c = hit.mesh->mat.color;
-                auto col = lerp(make_float3(0), make_float3(0xff), dot(ray.dir * -1.f, hit.surfaceNormal));
-                c = ((static_cast<uint>(std::fabsf(col.x)) & 0xFF)) |
-                    ((static_cast<uint>(std::fabsf(col.y)) & 0xFF) << 8) |
-                    ((static_cast<uint>(std::fabsf(col.z)) & 0xFF) << 16);
+                c = hit.mesh->mat.color;
+                //auto col = lerp(make_float3(0), make_float3(0xff), dot(ray.dir * -1.f, hit.surfaceNormal));
+                //c = ((static_cast<uint>(std::fabsf(col.x)) & 0xFF)) |
+                //    ((static_cast<uint>(std::fabsf(col.y)) & 0xFF) << 8) |
+                //    ((static_cast<uint>(std::fabsf(col.z)) & 0xFF) << 16);
             }
             else
             {
@@ -142,11 +142,11 @@ void RenderArea(
 
             
             // Set color value
-            buffer[i * bw + j] = c;
+            buffer[j * bw + i] = c;
             //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }
-
+    std::cout << "Index done: " << index << '\n';
 }
 
 void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
@@ -159,8 +159,60 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     float3 right = p1 - p0;
     float3 down = p2 - p0;
 
-    // Calculate ray directions
-    RenderArea(
-        screen.GetBuffer(), E, p0, right, down, 
-        0, 0, screen.GetWidth(), screen.GetHeight(), screen.GetWidth(), screen.GetHeight(), scene);
+    const uint width = screen.GetWidth();
+    const uint height = screen.GetHeight();
+
+    //AddTask([&]()
+    //{
+    //    RenderArea(screen.GetBuffer(), E, p0, right, down, 
+    //        0, 0, 
+    //        width/2, height, 
+    //        width, height, scene);
+    //});
+    //AddTask([&]()
+    //{
+    //    RenderArea(screen.GetBuffer(), E, p0, right, down, 
+    //        width/2, 0, 
+    //        width, height, 
+    //        width, height, scene);
+    //});
+
+    static int a = 0;
+    // Calculate the tasks to render
+    for (uint j = 0; j < height - squareY; j += squareY)
+    {
+        for (uint i = 0; i < width - squareX; i += squareX)
+        {
+            AddTask([&]()
+            {
+                RenderArea(
+                    screen.GetBuffer(), E, p0, right, down, i, j, squareX, squareY, width, height, scene, a);
+            });
+            a++;
+        }
+    }
+    a = 0;
+    
+    //for (uint j = 0; j < height - 1; j++)
+    //{
+    //    for (uint i = 0; i < width - 1; i++)
+    //    {
+    //        AddTask([&]()
+    //        {
+    //            RenderArea(
+    //                screen.GetBuffer(), E, p0, right, down, i, j, 1, 1, width, height, scene);
+    //        });
+    //    }
+    //}
+    
+
+    RunTasks();
+    WaitForAll();
+
+    taskflow.clear();
+    //std::cout << screen.GetBuffer()[0] << ' ' << screen.GetBuffer()[512 * 512 - 1] << '\n';
+    //// Calculate ray directions
+    //RenderArea(
+    //    screen.GetBuffer(), E, p0, right, down, 
+    //    0, 0, screen.GetWidth(), screen.GetHeight(), screen.GetWidth(), screen.GetHeight(), scene);
  }

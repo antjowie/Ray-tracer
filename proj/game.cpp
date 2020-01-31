@@ -6,8 +6,8 @@
 void Game::Init()
 {
 	renderer.threadCount = std::thread::hardware_concurrency();
-	renderer.squareX = 16;
-	renderer.squareY = 16;
+	renderer.squareX = 256;
+	renderer.squareY = 256;
 
 	//scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
 	//scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
