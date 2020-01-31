@@ -84,8 +84,54 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
     return ret;
 }
 
-void RenderArea(Pixel* buffer, uint x, uint y, uint w, uint h, uint bw, uint bh)
+/**
+ * buffer: screen buffer
+ * e: eye pos
+ * x: initial x index
+ * y: initial y index
+ * w: width of area
+ * h: height of area
+ * bw: buffer width
+ * hw: buffer height
+ */
+void RenderArea(
+    Pixel* buffer, float3 e, float3 topLeft, float3 right, float3 down, 
+    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
 {
+    // Iterate over area
+    for (uint i = y; i < y + h; i++)
+    {
+        float v = (float)i / bh;
+        for (uint j = x; j < x + w; j++)
+        {
+            // Generate ray
+            float u = (float)j / bw;
+            float3 P = topLeft + u * right + v * down;
+            float3 D = normalize(P - e);
+
+            Ray ray;
+            ray.origin = e;
+            ray.dir = D;
+
+            auto hit = Trace(ray, scene);
+            Pixel c;
+
+            if (hit.isHit)
+            {
+                c = hit.mesh->mat.color;
+            }
+            else
+            {
+                float3 normalizedColor = ray.dir * 0xff;
+                c = ((static_cast<uint>(std::fabsf(normalizedColor.x)) & 0xFF)) |
+                    ((static_cast<uint>(std::fabsf(normalizedColor.y)) & 0xFF) << 8) |
+                    ((static_cast<uint>(std::fabsf(normalizedColor.z)) & 0xFF) << 16);
+            }
+
+            // Set color value
+            buffer[i * bw + j] = c;
+        }
+    }
 
 }
 
@@ -100,35 +146,7 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     float3 down = p2 - p0;
 
     // Calculate ray directions
-    for (int y = 0; y < screen.GetHeight(); y++)
-    {
-        for (int x = 0; x < screen.GetWidth(); x++)
-        {
-            float u = (float)x / screen.GetWidth();
-            float v = (float)y / screen.GetHeight();
-            float3 P = p0 + u * right + v * down;
-            float3 D = normalize(P - E);
-
-            Ray ray;
-            ray.origin = E;
-            ray.dir = D;
-            
-            auto hit = Trace(ray, scene);
-            Pixel c;
-            
-            if (hit.isHit)
-            {
-                c = hit.mesh->mat.color;
-            }
-            else
-            {
-                float3 normalizedColor = ray.dir * 0xff;
-                c = ((static_cast<uint>(std::fabsf(normalizedColor.x)) & 0xFF)) |
-                    ((static_cast<uint>(std::fabsf(normalizedColor.y)) & 0xFF) << 8) |
-                    ((static_cast<uint>(std::fabsf(normalizedColor.z)) & 0xFF) << 16);
-            }
-
-            screen.Plot(x, y, c);
-        }
-    }
-}
+    RenderArea(
+        screen.GetBuffer(), E, p0, right, down, 
+        0, 0, screen.GetWidth(), screen.GetHeight(), screen.GetWidth(), screen.GetHeight(), scene);
+ }
