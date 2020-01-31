@@ -84,6 +84,11 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
     return ret;
 }
 
+void RenderArea(Pixel* buffer, int x, int y)
+{
+
+}
+
 void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
 {
     // Calculate eye and screen

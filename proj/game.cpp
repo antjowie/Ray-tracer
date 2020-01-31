@@ -5,9 +5,25 @@
 // -----------------------------------------------------------
 void Game::Init()
 {
-	renderer.threadCount = 12;
-	renderer.squareX = 32;
-	renderer.squareY = 32;
+	auto obs = executor.make_observer<tf::ExecutorObserver>();
+
+	for(int i = 0; i < 20; i++)
+		AddTask([i]() {std::cout << i << "\n"; });
+	RunTasks();
+	WaitForAll();
+	{
+		std::ofstream of("dump.json");
+		obs->dump(of);
+	}
+
+	return;
+
+
+
+
+	renderer.threadCount = std::thread::hardware_concurrency();
+	renderer.squareX = 16;
+	renderer.squareY = 16;
 
 	//scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
 	//scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
@@ -44,35 +60,39 @@ void Game::Tick(float deltaTime)
 	MoveCamera();
 	renderer.Render(camera, *screen, scene);
 
-	static bool show = false;
-	ImGui::ShowDemoWindow(&show);
 
-	if(!ImGui::Begin("Debug"))
+
+	// ImGui stuff
 	{
+		static bool show = false;
+		ImGui::ShowDemoWindow(&show);
+
+		if(!ImGui::Begin("Debug"))
+		{
+			ImGui::End();
+			return;
+		}
+		int x, y;
+		glfwGetWindowSize(window, &x, &y);
+
+		if (ImGui::CollapsingHeader("Info",ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Text("Delta time: %f", dt);
+			ImGui::Text("FPS: %f", 1.f / dt);
+			ImGui::Text("Window: %i %i", x,y);
+			ImGui::Text("Render: %i %i", screen->GetWidth(), screen->GetHeight());
+			ImGui::Text("Camera speed: "); ImGui::SameLine(); ImGui::DragFloat("##camera", &speed,0.2f,0.f);
+		}
+
+		if (ImGui::CollapsingHeader("Renderer", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Text("Thread count: "); ImGui::SameLine(); ImGui::DragScalar("##threadCount", ImGuiDataType_U32,&renderer.threadCount, 0.2f, 0);
+			ImGui::Text("Square X: "); ImGui::SameLine(); ImGui::DragScalar("##squareX", ImGuiDataType_U32, &renderer.squareX, 0.2f, 0);
+			ImGui::Text("Square Y: "); ImGui::SameLine(); ImGui::DragScalar("##squareY", ImGuiDataType_U32, &renderer.squareY, 0.2f, 0);
+
+		}
 		ImGui::End();
-		return;
 	}
-	int x, y;
-	glfwGetWindowSize(window, &x, &y);
-
-	if (ImGui::CollapsingHeader("Info",ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Text("Delta time: %f", dt);
-		ImGui::Text("FPS: %f", 1.f / dt);
-		ImGui::Text("Window: %i %i", x,y);
-		ImGui::Text("Render: %i %i", screen->GetWidth(), screen->GetHeight());
-		ImGui::Text("Camera speed: "); ImGui::SameLine(); ImGui::DragFloat("##camera", &speed,0.2f,0.f);
-	}
-
-	if (ImGui::CollapsingHeader("Renderer", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		ImGui::Text("Thread count: "); ImGui::SameLine(); ImGui::DragScalar("##threadCount", ImGuiDataType_U32,&renderer.threadCount, 0.2f, 0);
-		ImGui::Text("Square X: "); ImGui::SameLine(); ImGui::DragScalar("##squareX", ImGuiDataType_U32, &renderer.squareX, 0.2f, 0);
-		ImGui::Text("Square Y: "); ImGui::SameLine(); ImGui::DragScalar("##squareY", ImGuiDataType_U32, &renderer.squareY, 0.2f, 0);
-
-	}
-	ImGui::End();
-
 }
 
 void Game::MoveCamera()

@@ -196,6 +196,7 @@ template <class T> void Swap( T &x, T &y ) { T t; t = x, x = y, y = t; }
 // Basic TaskFlow interface - see https://github.com/cpp-taskflow/cpp-taskflow for additional options
 using namespace tf;
 extern Taskflow taskflow;
+extern Executor executor;
 template <typename C> void AddTask( C&& callable ) { taskflow.emplace( callable ); }
 void RunTasks();
 void WaitForAll();

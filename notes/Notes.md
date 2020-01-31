@@ -9,7 +9,8 @@
 * Mon  
 **None**
 * Thu  
-**A solid Whitted style ray tracer**
+**A solid Whitted style ray tracer**  
+Render time: 11s
 * Fri  
 Optimization -> SIMD -> **5x faster**
 * Mon  
@@ -20,4 +21,3 @@ Monte-Carlo, many polish -> path tracing -> **Cook or (DOF, area lights) Kajiya 
 Even faster, quality of randomness -> sampling, estimation -> **Efficiency**
 * Fri  
 Future work -> path guiding -> **Great product**
-

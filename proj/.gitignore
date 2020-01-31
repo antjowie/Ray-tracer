@@ -21,6 +21,7 @@ debug
 .vs
 x64/debug
 x64/release
+x64/releasedebug
 x64/*.exe
 x64/*.ilk
 x64/*.pdb
