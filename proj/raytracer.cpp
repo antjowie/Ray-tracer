@@ -126,7 +126,11 @@ void RenderArea(
 
             if (hit.isHit)
             {
-                c = hit.mesh->mat.color;
+                //c = hit.mesh->mat.color;
+                auto col = lerp(make_float3(0), make_float3(0xff), dot(ray.dir * -1.f, hit.surfaceNormal));
+                c = ((static_cast<uint>(std::fabsf(col.x)) & 0xFF)) |
+                    ((static_cast<uint>(std::fabsf(col.y)) & 0xFF) << 8) |
+                    ((static_cast<uint>(std::fabsf(col.z)) & 0xFF) << 16);
             }
             else
             {
@@ -138,7 +142,8 @@ void RenderArea(
 
             
             // Set color value
-            buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
+            buffer[i * bw + j] = c;
+            //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }
 
