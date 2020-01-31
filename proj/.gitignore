@@ -25,6 +25,7 @@ x64/releasedebug
 x64/*.exe
 x64/*.ilk
 x64/*.pdb
+dump.json
 
 # Prerequisites
 *.d

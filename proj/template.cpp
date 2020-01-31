@@ -147,6 +147,7 @@ void main()
 		if (!running) break;
 	}
 	// close down
+	game->Shutdown();
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

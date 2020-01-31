@@ -104,7 +104,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene)
  */
 void RenderArea(
     Pixel* buffer, float3 e, float3 topLeft, float3 right, float3 down,
-    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene, int index)
+    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
 {
     // Iterate over area
     for (uint j = y; j < y + h; j++)
@@ -146,7 +146,6 @@ void RenderArea(
             //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }
-    std::cout << "Index done: " << index << '\n';
 }
 
 void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
@@ -162,57 +161,25 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     const uint width = screen.GetWidth();
     const uint height = screen.GetHeight();
 
-    //AddTask([&]()
-    //{
-    //    RenderArea(screen.GetBuffer(), E, p0, right, down, 
-    //        0, 0, 
-    //        width/2, height, 
-    //        width, height, scene);
-    //});
-    //AddTask([&]()
-    //{
-    //    RenderArea(screen.GetBuffer(), E, p0, right, down, 
-    //        width/2, 0, 
-    //        width, height, 
-    //        width, height, scene);
-    //});
+    // If we want no MT :(
+    //RenderArea(screen.GetBuffer(), E, p0, right, down, 0, 0, width,height, width, height, scene);
+    //return;
 
-    static int a = 0;
     // Calculate the tasks to render
-    for (uint j = 0; j < height - squareY; j += squareY)
+    for (uint j = 0; j < height; j += squareY)
     {
-        for (uint i = 0; i < width - squareX; i += squareX)
+        for (uint i = 0; i < width; i += squareX)
         {
-            AddTask([&]()
+            AddTask([=, &screen, &scene]()
             {
                 RenderArea(
-                    screen.GetBuffer(), E, p0, right, down, i, j, squareX, squareY, width, height, scene, a);
+                    screen.GetBuffer(), E, p0, right, down, i, j, squareX, squareY, width, height, scene);
             });
-            a++;
         }
     }
-    a = 0;
-    
-    //for (uint j = 0; j < height - 1; j++)
-    //{
-    //    for (uint i = 0; i < width - 1; i++)
-    //    {
-    //        AddTask([&]()
-    //        {
-    //            RenderArea(
-    //                screen.GetBuffer(), E, p0, right, down, i, j, 1, 1, width, height, scene);
-    //        });
-    //    }
-    //}
-    
 
     RunTasks();
     WaitForAll();
 
     taskflow.clear();
-    //std::cout << screen.GetBuffer()[0] << ' ' << screen.GetBuffer()[512 * 512 - 1] << '\n';
-    //// Calculate ray directions
-    //RenderArea(
-    //    screen.GetBuffer(), E, p0, right, down, 
-    //    0, 0, screen.GetWidth(), screen.GetHeight(), screen.GetWidth(), screen.GetHeight(), scene);
- }
+}

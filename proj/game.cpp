@@ -1,13 +1,15 @@
 #include "precomp.h" // include (only) this in every .cpp file
 
+tf::ExecutorObserver* obs = nullptr;
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
 void Game::Init()
 {
+	//obs = executor.make_observer<tf::ExecutorObserver>();
 	renderer.threadCount = std::thread::hardware_concurrency();
-	renderer.squareX = 256;
-	renderer.squareY = 256;
+	renderer.squareX = 16;
+	renderer.squareY = 16;
 
 	//scene.Add({ { -1,-1,1 }, { 1, -1, 1 }, { 0,1,1 } });
 	//scene.Add({ { -1,-1,0.5f }, { 0, -1, 0.5f }, { -0.5f,1,1.5f }, 0xFF0000 });
@@ -18,7 +20,7 @@ void Game::Init()
 	constexpr int x = 720;
 	constexpr int y = 720;
 	glfwSetWindowSize(window, x, y);
-	
+
 	dt = 0;
 	speed = 10.f;
 	camera = camera.Identity();
@@ -29,6 +31,8 @@ void Game::Init()
 // -----------------------------------------------------------
 void Game::Shutdown()
 {
+	if(obs)
+	obs->dump(std::ofstream("dump.json",std::ios::beg));
 }
 
 // -----------------------------------------------------------
