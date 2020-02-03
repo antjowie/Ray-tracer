@@ -82,9 +82,9 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
                         ret.mesh = &mesh;
 
                         ret.surfaceNormal = make_float3(
-                                mesh.faces[i / 3 + 0],
-                                mesh.faces[i / 3 + 1],
-                                mesh.faces[i / 3 + 2]
+                                mesh.faces[ind[i] * 3 + 0],
+                                mesh.faces[ind[i] * 3 + 1],
+                                mesh.faces[ind[i] * 3 + 2]
                             );
                     }
 
@@ -118,7 +118,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
             // This is very incorrect but temp
             float l = 1.f; // Light intensity
 
-            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ray.dir * -1.f,shadow.dir));
+            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ret.surfaceNormal,shadow.dir));
         }
     }
 

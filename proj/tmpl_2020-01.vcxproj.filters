@@ -32,6 +32,7 @@
       <Filter>tiny_gltf</Filter>
     </ClCompile>
     <ClCompile Include="asset_loader.cpp" />
+    <ClCompile Include="bvh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />
@@ -61,6 +62,7 @@
     </ClInclude>
     <ClInclude Include="model.h" />
     <ClInclude Include="asset_loader.h" />
+    <ClInclude Include="bvh.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="template code">

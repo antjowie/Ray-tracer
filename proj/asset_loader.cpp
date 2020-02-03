@@ -365,30 +365,33 @@ Model LoadGLTF(const char* path, const mat4& t)
                                 // coordinates into "facevarying" order) for each face
 
                                 // For each triangle :
-                                for (size_t i{ 0 }; i < indices.size() / 3; ++i) {
-                                    // get the i'th triange's indexes
-                                    auto f0 = indices[3 * i + 0];
-                                    auto f1 = indices[3 * i + 1];
-                                    auto f2 = indices[3 * i + 2];
-
-                                    // get the 3 normal vectors for that face
-                                    v3f n0, n1, n2;
-                                    n0 = normals[f0];
-                                    n1 = normals[f1];
-                                    n2 = normals[f2];
+                                for (size_t i{ 0 }; i < normals.size(); i++) {
+                                    //// get the i'th triange's indexes
+                                    //auto f0 = indices[3 * i + 0];
+                                    //auto f1 = indices[3 * i + 1];
+                                    //auto f2 = indices[3 * i + 2];
+                                    //
+                                    //// get the 3 normal vectors for that face
+                                    //v3f n0, n1, n2;
+                                    //n0 = normals[f0];
+                                    //n1 = normals[f1];
+                                    //n2 = normals[f2];
+                                    const auto va = normals[i];
+                                    float3 v = make_float3(va.x, va.y, va.z);
+                                    v = t.TransformVector(v);
 
                                     // Put them in the array in the correct order
-                                    mesh.faces.push_back(n0.x);
-                                    mesh.faces.push_back(n0.y);
-                                    mesh.faces.push_back(n0.z);
+                                    mesh.faces.push_back(v.x);
+                                    mesh.faces.push_back(v.y);
+                                    mesh.faces.push_back(v.z);
 
-                                    mesh.faces.push_back(n1.x);
-                                    mesh.faces.push_back(n1.y);
-                                    mesh.faces.push_back(n1.z);
+                                    //mesh.faces.push_back(n1.x);
+                                    //mesh.faces.push_back(n1.y);
+                                    //mesh.faces.push_back(n1.z);
 
-                                    mesh.faces.push_back(n2.x);
-                                    mesh.faces.push_back(n2.y);
-                                    mesh.faces.push_back(n2.z);
+                                    //mesh.faces.push_back(n2.x);
+                                    //mesh.faces.push_back(n2.y);
+                                    //mesh.faces.push_back(n2.z);
                                 }
                             } break;
                             default:

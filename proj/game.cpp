@@ -46,7 +46,7 @@ void Game::Init()
 	scene.Add(std::move(fmodel));
 
 	// Add a light
-	scene.Add(PointLight{ make_float3(-1,2,2),20.f });
+	scene.Add(PointLight{ make_float3(-1,3,2),20.f });
 
 	//scene.Add(LoadGLTF("assets/Duck/glTF/Duck.gltf"));
 	std::cout << "-----\nDone loading" << '\n';
