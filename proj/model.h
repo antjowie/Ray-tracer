@@ -11,12 +11,9 @@ struct Material
 
 struct Mesh
 {
-    std::vector<unsigned> indices; // points to 1 vertex, so 3 elements
-    std::vector<float> vertices; // x y z
+    std::vector<std::array<float3,3>> faces; // x y z
+    std::vector<float3> normals; // Saved for only one vertex in the face
 
-    std::vector<float> faces; // Saved for only one vertex in the face
-
-    aabb bb; // Local space
     Material mat;
 };
 

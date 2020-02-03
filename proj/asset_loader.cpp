@@ -150,7 +150,6 @@ namespace
     };
 }
 
-
 Model LoadGLTF(const char* path, const mat4& t)
 {
     //https://github.com/syoyo/tinygltf/blob/master/examples/raytrace/gltf-loader.cc
@@ -204,9 +203,6 @@ Model LoadGLTF(const char* path, const mat4& t)
         // Create new mesh
         object.meshes.push_back({});
         Mesh& mesh = object.meshes.back();
-
-        // To store the min and max of the buffer (as 3D vector of floats)
-        v3f pMin = {}, pMax = {};
 
         // For each primitive
         for (const auto& meshPrimitive : gltfMesh.primitives)
@@ -277,8 +273,7 @@ Model LoadGLTF(const char* path, const mat4& t)
                 std::cout << "indices: ";
                 for (size_t i(0); i < indicesArrayPtr->size(); ++i)
                 {
-                    //std::cout << indices[i] << " ";
-                    mesh.indices.push_back(indices[i]);
+                    std::cout << indices[i] << " ";
                     //loadedMesh.faces.push_back(indices[i]);
                 }
                 std::cout << '\n';
@@ -310,16 +305,7 @@ Model LoadGLTF(const char* path, const mat4& t)
                     // -- Load attributes -- //
                     if (attribute.first == "POSITION")
                     {
-                        std::cout << "found position attribute\n";
-
-                        // get the position min/max for computing the boundingbox
-                        pMin.x = attribAccessor.minValues[0];
-                        pMin.y = attribAccessor.minValues[1];
-                        pMin.z = attribAccessor.minValues[2];
-                        pMax.x = attribAccessor.maxValues[0];
-                        pMax.y = attribAccessor.maxValues[1];
-                        pMax.z = attribAccessor.maxValues[2];
-
+                        std::vector<float> vertices;
                         switch (attribAccessor.type)
                         {
                         case TINYGLTF_TYPE_VEC3:
@@ -328,8 +314,6 @@ Model LoadGLTF(const char* path, const mat4& t)
                             {
                             case TINYGLTF_COMPONENT_TYPE_FLOAT:
                             {
-                                std::cout << "Type is FLOAT\n";
-                                // 3D vector of float
                                 v3fArray positions(arrayAdapter<v3f>(dataPtr, count, byte_stride));
 
                                 for (size_t i{ 0 }; i < positions.size(); ++i)
@@ -338,17 +322,32 @@ Model LoadGLTF(const char* path, const mat4& t)
                                     float3 v = make_float3(va.x, va.y, va.z);
                                     v = t.TransformPoint(v);
 
-                                    mesh.vertices.push_back(v.x);
-                                    mesh.vertices.push_back(v.y);
-                                    mesh.vertices.push_back(v.z);
+                                    vertices.push_back(v.x);
+                                    vertices.push_back(v.y);
+                                    vertices.push_back(v.z);
                                 }
                             }
                             }
                         }
                         }
+                        // Fill by adding a face a time
+                        for (size_t i = 0; i < indices.size(); i += 3)
+                        {
+                            mesh.faces.push_back({});
+                            auto& face = mesh.faces.back();
+
+                            for (size_t j = 0; j < 3; j++)
+                            {
+                                // * 3 since attribs are 3 comps each
+                                face[j].x = vertices[indices[i + j] * 3 + 0];
+                                face[j].y = vertices[indices[i + j] * 3 + 1];
+                                face[j].z = vertices[indices[i + j] * 3 + 2];
+                            }
+                        }
                     }
                     if (attribute.first == "NORMAL") 
                     {
+                        std::vector<float> normalsVec;
                         switch (attribAccessor.type) 
                         {
                         case TINYGLTF_TYPE_VEC3: 
@@ -361,37 +360,15 @@ Model LoadGLTF(const char* path, const mat4& t)
                                 v3fArray normals(
                                     arrayAdapter<v3f>(dataPtr, count, byte_stride));
 
-                                // IMPORTANT: We need to reorder normals (and texture
-                                // coordinates into "facevarying" order) for each face
-
-                                // For each triangle :
                                 for (size_t i{ 0 }; i < normals.size(); i++) {
-                                    //// get the i'th triange's indexes
-                                    //auto f0 = indices[3 * i + 0];
-                                    //auto f1 = indices[3 * i + 1];
-                                    //auto f2 = indices[3 * i + 2];
-                                    //
-                                    //// get the 3 normal vectors for that face
-                                    //v3f n0, n1, n2;
-                                    //n0 = normals[f0];
-                                    //n1 = normals[f1];
-                                    //n2 = normals[f2];
                                     const auto va = normals[i];
                                     float3 v = make_float3(va.x, va.y, va.z);
                                     v = t.TransformVector(v);
 
                                     // Put them in the array in the correct order
-                                    mesh.faces.push_back(v.x);
-                                    mesh.faces.push_back(v.y);
-                                    mesh.faces.push_back(v.z);
-
-                                    //mesh.faces.push_back(n1.x);
-                                    //mesh.faces.push_back(n1.y);
-                                    //mesh.faces.push_back(n1.z);
-
-                                    //mesh.faces.push_back(n2.x);
-                                    //mesh.faces.push_back(n2.y);
-                                    //mesh.faces.push_back(n2.z);
+                                    normalsVec.push_back(v.x);
+                                    normalsVec.push_back(v.y);
+                                    normalsVec.push_back(v.z);
                                 }
                             } break;
                             default:
@@ -400,6 +377,18 @@ Model LoadGLTF(const char* path, const mat4& t)
                         } break;
                         default:
                             std::cerr << "Unhandeled vector type for normal\n";
+                        }
+                    
+                        // Fill mesh faces
+                        for (size_t i = 0; i < indices.size(); i += 3)
+                        {
+                            mesh.normals.push_back({});
+                            auto& normal = mesh.normals.back();
+
+                            // * 3 since attribs are 3 comps each
+                            normal.x = normalsVec[indices[i] * 3 + 0];
+                            normal.y = normalsVec[indices[i] * 3 + 1];
+                            normal.z = normalsVec[indices[i] * 3 + 2];
                         }
                     }
 
@@ -479,7 +468,6 @@ Model LoadGLTF(const char* path, const mat4& t)
                     }
                     */
                     
-
                     // -- Load materials -- //
                     tinygltf::Material &mat = model.materials[meshPrimitive.material];
 
@@ -500,44 +488,7 @@ Model LoadGLTF(const char* path, const mat4& t)
                 break;
             }
 
-
-            // bbox :
-            {
-                v3f bCenter;
-                bCenter.x = 0.5f * (pMax.x - pMin.x) + pMin.x;
-                bCenter.y = 0.5f * (pMax.y - pMin.y) + pMin.y;
-                bCenter.z = 0.5f * (pMax.z - pMin.z) + pMin.z;
-                mesh.bb.bmin3 = (make_float3(pMin.x, pMin.y, pMin.z));
-                mesh.bb.bmax3 = (make_float3(pMax.x, pMax.y, pMax.z));
-
-                //for (size_t v = 0; v < mesh.vertices.size() / 3; v++) {
-            //    mesh.vertices[3 * v + 0] -= bCenter.x;
-            //    mesh.vertices[3 * v + 1] -= bCenter.y;
-            //    mesh.vertices[3 * v + 2] -= bCenter.z;
-            //}
-
-                //loadedMesh.pivot_xform[0][0] = 1.0f;
-            //loadedMesh.pivot_xform[0][1] = 0.0f;
-            //loadedMesh.pivot_xform[0][2] = 0.0f;
-            //loadedMesh.pivot_xform[0][3] = 0.0f;
-
-                //loadedMesh.pivot_xform[1][0] = 0.0f;
-            //loadedMesh.pivot_xform[1][1] = 1.0f;
-            //loadedMesh.pivot_xform[1][2] = 0.0f;
-            //loadedMesh.pivot_xform[1][3] = 0.0f;
-
-                //loadedMesh.pivot_xform[2][0] = 0.0f;
-            //loadedMesh.pivot_xform[2][1] = 0.0f;
-            //loadedMesh.pivot_xform[2][2] = 1.0f;
-            //loadedMesh.pivot_xform[2][3] = 0.0f;
-
-                //loadedMesh.pivot_xform[3][0] = bCenter.x;
-            //loadedMesh.pivot_xform[3][1] = bCenter.y;
-            //loadedMesh.pivot_xform[3][2] = bCenter.z;
-            //loadedMesh.pivot_xform[3][3] = 1.0f;            
-            }
-
-            std::cout << "Loaded vertice and indices: " << mesh.vertices.size() << " " << mesh.indices.size() << '\n';
+            std::cout << "Loaded vertices: " << mesh.faces.size() * 9 << '\n';
         }
     }
 

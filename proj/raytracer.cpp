@@ -51,26 +51,13 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
     {
         for (const auto& mesh : model.meshes)
         {
-            
-            const auto& ver = mesh.vertices;
-            const auto& ind = mesh.indices;
-
-            // Iterate over 9 indices per loop
-            // i is the index that we currently are at
-            for (size_t i = 0; i < ind.size(); i += 3)
+            // Iterate over each face
+            for (size_t i = 0; i < mesh.faces.size(); i++)
             {
-                float3 v[3];
-                // Create vertex from 3 indicess
-                for (size_t j = 0; j < 3; j++)
-                {
-                    v[j] = make_float3(
-                        ver[ind[i + j] * 3 + 0],
-                        ver[ind[i + j] * 3 + 1],
-                        ver[ind[i + j] * 3 + 2]);
-                }
-                
+                const auto& face = mesh.faces[i];
+
                 auto h = TriangleIntersect(
-                    ray, v[0], v[1], v[2]);
+                    ray, face[0], face[1], face[2]);
 
                 if (h.isHit)
                 {
@@ -81,11 +68,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
                         ret.model = &model;
                         ret.mesh = &mesh;
 
-                        ret.surfaceNormal = make_float3(
-                                mesh.faces[ind[i] * 3 + 0],
-                                mesh.faces[ind[i] * 3 + 1],
-                                mesh.faces[ind[i] * 3 + 2]
-                            );
+                        ret.surfaceNormal = mesh.normals[i];
                     }
 
                     if (earlyQuit)
@@ -95,6 +78,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
                 }
             }
         }
+        
     }
 
     // No hit
