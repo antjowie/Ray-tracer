@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <array>
 #include <string>
 #include <thread>
 #include <math.h>

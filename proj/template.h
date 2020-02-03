@@ -40,7 +40,11 @@ struct ALIGN( 8 ) uint2 { uint x, y; };
 struct ALIGN( 8 ) float2 { float x, y; };
 struct int3 { int x, y, z; };
 struct uint3 { uint x, y, z; };
-struct float3 { float x, y, z; };
+struct float3 {
+	union {
+		struct { float x, y, z; };
+		float m[3];
+	};};
 struct ALIGN( 16 ) int4 { int x, y, z, w; };
 struct ALIGN( 16 ) uint4 { uint x, y, z, w; };
 struct ALIGN( 16 ) float4 { float x, y, z, w; };
