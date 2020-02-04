@@ -212,6 +212,7 @@
     <ClInclude Include="lib\imgui\imgui.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="precomp.h" />
+    <ClInclude Include="ray.h" />
     <ClInclude Include="raytracer.h" />
     <ClInclude Include="scene.h" />
     <ClInclude Include="stb_image.h" />

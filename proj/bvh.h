@@ -1,19 +1,22 @@
 #pragma once
-#include <raytracer.h>
 
 /**
  * A Model has a BVH, in the end they are merged
  */
 class BVHAccelerator
 {
+private:
+    struct Hit;
+
 public:
     struct Triangle
     {
         const Mesh* mesh;
         std::array<float3,3> face;
+        float3 normal;
     };
 
-    struct BVHNode
+    struct Node
     {
         float3 bmin;
         uint leftFirst;
@@ -23,10 +26,19 @@ public:
 
     void Build(const Model& model);
 
-    PrimaryHit Traverse(const Ray& ray);
+    Hit Traverse(const Ray& ray);
 
 private:
+
+    struct Hit
+    {
+        float t;
+        Triangle* triangle;
+    };
+
+    Hit Traverse(const Node& node, const Ray& ray);
+
     std::vector<Triangle> triangles;
     //std::unique_ptr<BVHNode[]> tree;
-    BVHNode* tree = nullptr;
+    Node* tree = nullptr;
 };

@@ -103,6 +103,7 @@ using namespace Tmpl8;
 // #include "my_include.h"
 
 // Raytracer stuff
+#include "ray.h"
 #include "model.h"
 #include "bvh.h"
 #include "scene.h"

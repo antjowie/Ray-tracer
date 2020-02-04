@@ -1,6 +1,4 @@
 #include "precomp.h"
-#include <cstdlib>
-#include "bvh.h"
 
 // Calculates the bounds that the triangles range contains
 void CalculateBounds(float3& bmin, float3& bmax, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
@@ -55,7 +53,7 @@ uint Split(std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint co
 
 // Divide according to a criteria
 // node should be the next node
-void Subdivide(BVHAccelerator::BVHNode* tree, BVHAccelerator::BVHNode& node, uint& index, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
+void Subdivide(BVHAccelerator::Node* tree, BVHAccelerator::Node& node, uint& index, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
 {
     // If we are looking at 3 triangles, we will just refer to them
     if (count < 3)
@@ -87,11 +85,12 @@ void BVHAccelerator::Build(const Model& model)
     float3 bmax = make_float3(std::numeric_limits<float>::min());
     for (const auto& mesh : model.meshes)
     {
-        for (const auto& face : mesh.faces)
+        for (int i = 0; i < mesh.faces.size(); i++)
         {
             auto& tri = triangles.emplace_back();
             tri.mesh = &mesh;
-            tri.face = face;
+            tri.face = mesh.faces[i];
+            tri.normal = mesh.normals[i];
 
             for (int i = 0; i < 3; i++)
             {
@@ -101,7 +100,7 @@ void BVHAccelerator::Build(const Model& model)
         }
     }
 
-    tree = new BVHNode[triangles.size() * 2];
+    tree = new Node[triangles.size() * 2];
 
     auto& root = tree[0];
     root.leftFirst = 2;
@@ -116,36 +115,42 @@ void BVHAccelerator::Build(const Model& model)
     Subdivide(tree, tree[index], index, triangles, 0, triangles.size());
 }
 
-bool intersection(box b, ray r)
+float intersection(const float3& bmin, const float3& bmax, const Ray& r)
 {
-    float tx1 = (b.min.x - r.O.x) * r.rD.x;
-    float tx2 = (b.max.x - r.O.x) * r.rD.x;
+    float tx1 = (bmin.x - r.origin.x) * r.dir.x;
+    float tx2 = (bmax.x - r.origin.x) * r.dir.x;
     float tmin = min(tx1, tx2);
     float tmax = max(tx1, tx2);
-    float ty1 = (b.min.y - r.O.y) * r.rD.y;
-    float ty2 = (b.max.y - r.O.y) * r.rD.y;
+    float ty1 = (bmin.y - r.origin.y) * r.dir.y;
+    float ty2 = (bmax.y - r.origin.y) * r.dir.y;
     tmin = max(tmin, min(ty1, ty2));
     tmax = min(tmax, max(ty1, ty2));
-    float tz1 = (b.min.z - r.O.z) * r.rD.z;
-    float tz2 = (b.max.z - r.O.z) * r.rD.z;
+    float tz1 = (bmin.z - r.origin.z) * r.dir.z;
+    float tz2 = (bmax.z - r.origin.z) * r.dir.z;
     tmin = max(tmin, min(tz1, tz2));
     tmax = min(tmax, max(tz1, tz2));
-    return tmax >= tmin && tmax >= 0;
+    return (tmax >= tmin && tmax >= 0.f) ? tmin : -1.f;
 }
 
-bool intersection(box b, ray r)
-{
-    __m128 t1 = _mm_mul_ps(_mm_sub_ps(node->bmin4, O4), rD4);
-    __m128 t2 = _mm_mul_ps(_mm_sub_ps(node->bmax4, O4), rD4);
-    __m128 vmax4 = _mm_max_ps(t1, t2), vmin4 = _mm_min_ps(t1, t2);
-    float* vmax = (float*)&vmax4, * vmin = (float*)&vmin4;
-    float tmax = min(vmax[0], min(vmax[1], vmax[2]));
-    float tmin = max(vmin[0], max(vmin[1], vmin[2]));
-    return tmax >= tmin && tmax >= 0;
-}
+//bool intersection(box b, ray r)
+//{
+//    __m128 t1 = _mm_mul_ps(_mm_sub_ps(node->bmin4, O4), rD4);
+//    __m128 t2 = _mm_mul_ps(_mm_sub_ps(node->bmax4, O4), rD4);
+//    __m128 vmax4 = _mm_max_ps(t1, t2), vmin4 = _mm_min_ps(t1, t2);
+//    float* vmax = (float*)&vmax4, * vmin = (float*)&vmin4;
+//    float tmax = min(vmax[0], min(vmax[1], vmax[2]));
+//    float tmin = max(vmin[0], max(vmin[1], vmin[2]));
+//    return tmax >= tmin && tmax >= 0;
+//}
 
-PrimaryHit BVHAccelerator::Traverse(const Ray& ray)
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray)
 {
     auto& root = tree[2];
-    
+    return Traverse(root, ray);
 }
+
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray)
+{
+
+}
+

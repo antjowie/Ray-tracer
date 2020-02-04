@@ -63,6 +63,7 @@
     <ClInclude Include="model.h" />
     <ClInclude Include="asset_loader.h" />
     <ClInclude Include="bvh.h" />
+    <ClInclude Include="ray.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="template code">
