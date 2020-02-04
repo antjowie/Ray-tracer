@@ -1,4 +1,5 @@
 #include "precomp.h"
+#include <filesystem>
 
 // https://github.com/syoyo/tinygltf/blob/master/examples/raytrace/gltf-loader.h
 namespace
@@ -161,7 +162,11 @@ Model LoadGLTF(const char* path, const mat4& t)
     std::string err;
     std::string warn;
 
-    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, path);
+    bool ret = false;
+    if(std::filesystem::path(path).extension() == ".glb")
+        ret = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+    else
+        ret = loader.LoadASCIIFromFile(&model, &err, &warn, path);
 
     if (!warn.empty()) {
         std::cout << "glTF parse warning: " << warn << std::endl;
@@ -469,16 +474,19 @@ Model LoadGLTF(const char* path, const mat4& t)
                     */
                     
                     // -- Load materials -- //
-                    tinygltf::Material &mat = model.materials[meshPrimitive.material];
+                    if (meshPrimitive.material != -1)
+                    {
+                        tinygltf::Material &mat = model.materials[meshPrimitive.material];
 
-                    // Color
-                    // Convert color to unsigned int
-                    auto color = mat.pbrMetallicRoughness.baseColorFactor;
-                    std::vector<uint> comp(4);
-                    std::transform(std::begin(color), std::end(color), std::begin(comp), [](double val)
-                    {return static_cast<uint>(val * 0xff); });
+                        // Color
+                        // Convert color to unsigned int
+                        auto color = mat.pbrMetallicRoughness.baseColorFactor;
+                        std::vector<uint> comp(4);
+                        std::transform(std::begin(color), std::end(color), std::begin(comp), [](double val)
+                        {return static_cast<uint>(val * 0xff); });
 
-                    mesh.mat.color = *static_cast<Pixel*>(comp.data());
+                        mesh.mat.color = *static_cast<Pixel*>(comp.data());
+                    }
                 }
             }
             break;
