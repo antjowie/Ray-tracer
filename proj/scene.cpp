@@ -2,7 +2,8 @@
 
 void Scene::Add(Model&& model)
 {
-    m_models.push_back(model);
+    model = m_models.emplace_back(model);
+    model.bvh.Build(model);
 }
 
 void Scene::Add(PointLight&& light)

@@ -21,6 +21,7 @@ struct Model
 {
     mat4 transform = mat4::Identity();
     std::vector<Mesh> meshes;
+    BVHAccelerator bvh;
 };
 
 struct PointLight

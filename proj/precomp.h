@@ -104,8 +104,8 @@ using namespace Tmpl8;
 
 // Raytracer stuff
 #include "ray.h"
-#include "model.h"
 #include "bvh.h"
+#include "model.h"
 #include "scene.h"
 #include "tiny_gltf.h"
 #include "asset_loader.h"

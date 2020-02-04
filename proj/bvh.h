@@ -1,7 +1,12 @@
 #pragma once
 
+class Mesh;
+
 /**
  * A Model has a BVH, in the end they are merged
+ *
+ * It returns a Hit struct that contains the triangles/faces 
+ * that are hit by the supplied ray
  */
 class BVHAccelerator
 {
@@ -24,7 +29,8 @@ public:
         uint count;
     };
 
-    void Build(const Model& model);
+    // Since we get circular dependency, we just pass pointer
+    void Build(const Model* const model);
 
     Hit Traverse(const Ray& ray);
 
@@ -33,7 +39,9 @@ private:
     struct Hit
     {
         float t;
-        Triangle* triangle;
+        // Is an array
+        Triangle* triangles; 
+        int count;
     };
 
     Hit Traverse(const Node& node, const Ray& ray);

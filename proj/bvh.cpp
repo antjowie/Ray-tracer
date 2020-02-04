@@ -75,7 +75,7 @@ void Subdivide(BVHAccelerator::Node* tree, BVHAccelerator::Node& node, uint& ind
 }
 
 
-void BVHAccelerator::Build(const Model& model)
+void BVHAccelerator::Build(const Model* const model)
 {
     if (tree) delete[] tree;
 
@@ -83,7 +83,7 @@ void BVHAccelerator::Build(const Model& model)
     // While filling, calculate root bounds
     float3 bmin = make_float3(std::numeric_limits<float>::max());
     float3 bmax = make_float3(std::numeric_limits<float>::min());
-    for (const auto& mesh : model.meshes)
+    for (const auto& mesh : model->meshes)
     {
         for (int i = 0; i < mesh.faces.size(); i++)
         {
@@ -115,7 +115,7 @@ void BVHAccelerator::Build(const Model& model)
     Subdivide(tree, tree[index], index, triangles, 0, triangles.size());
 }
 
-float intersection(const float3& bmin, const float3& bmax, const Ray& r)
+float AABBIntersect(const float3& bmin, const float3& bmax, const Ray& r)
 {
     float tx1 = (bmin.x - r.origin.x) * r.dir.x;
     float tx2 = (bmax.x - r.origin.x) * r.dir.x;
@@ -132,7 +132,7 @@ float intersection(const float3& bmin, const float3& bmax, const Ray& r)
     return (tmax >= tmin && tmax >= 0.f) ? tmin : -1.f;
 }
 
-//bool intersection(box b, ray r)
+//bool AABBIntersect(box b, ray r)
 //{
 //    __m128 t1 = _mm_mul_ps(_mm_sub_ps(node->bmin4, O4), rD4);
 //    __m128 t2 = _mm_mul_ps(_mm_sub_ps(node->bmax4, O4), rD4);
@@ -151,6 +151,32 @@ BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray)
 
 BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray)
 {
+    Hit hit;
+    // Check if it should return the triangles
+    if (node.count != 0)
+    {
+        hit.count = node.count;
+        hit.triangles = &triangles[node.leftFirst];
+        return hit;
+    }
 
+    // Continue walking the tree
+    auto& left = tree[node.leftFirst];
+    auto& right = tree[node.leftFirst + 1];
+
+    auto f1 = AABBIntersect(left.bmin, left.bmax, ray);
+    auto f2 = AABBIntersect(right.bmin, right.bmax, ray);
+
+    if (f1 < f2) // If left is closer
+    {
+        auto hit = Traverse(left, ray);
+        if (hit.count != 0) // Any hit?
+            return Traverse(right, ray);
+    }
+    else
+    {
+        auto hit = Traverse(right, ray);
+        if (hit.count != 0) // Any hit?
+            return Traverse(left, ray);
+    }
 }
-
