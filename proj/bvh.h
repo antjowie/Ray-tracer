@@ -1,4 +1,5 @@
 #pragma once
+#include <raytracer.h>
 
 /**
  * A Model has a BVH, in the end they are merged
@@ -22,10 +23,10 @@ public:
 
     void Build(const Model& model);
 
-    //PrimaryHit Traverse(const Ray& ray);
+    PrimaryHit Traverse(const Ray& ray);
 
 private:
     std::vector<Triangle> triangles;
     //std::unique_ptr<BVHNode[]> tree;
-    BVHNode* tree;
+    BVHNode* tree = nullptr;
 };

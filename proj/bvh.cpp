@@ -1,5 +1,6 @@
 #include "precomp.h"
 #include <cstdlib>
+#include "bvh.h"
 
 // Calculates the bounds that the triangles range contains
 void CalculateBounds(float3& bmin, float3& bmax, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
@@ -72,7 +73,7 @@ void Subdivide(BVHAccelerator::BVHNode* tree, BVHAccelerator::BVHNode& node, uin
     auto splitOffset = Split(triangles, begin, count);
     auto right = index - 1;
     Subdivide(tree, tree[index], index, triangles, begin, splitOffset);
-    Subdivide(tree, tree[right], index, triangles, begin + splitOffset, begin + count);
+    Subdivide(tree, tree[right], index, triangles, begin + splitOffset, splitOffset);
 }
 
 
@@ -113,4 +114,38 @@ void BVHAccelerator::Build(const Model& model)
 
     // Build children
     Subdivide(tree, tree[index], index, triangles, 0, triangles.size());
+}
+
+bool intersection(box b, ray r)
+{
+    float tx1 = (b.min.x - r.O.x) * r.rD.x;
+    float tx2 = (b.max.x - r.O.x) * r.rD.x;
+    float tmin = min(tx1, tx2);
+    float tmax = max(tx1, tx2);
+    float ty1 = (b.min.y - r.O.y) * r.rD.y;
+    float ty2 = (b.max.y - r.O.y) * r.rD.y;
+    tmin = max(tmin, min(ty1, ty2));
+    tmax = min(tmax, max(ty1, ty2));
+    float tz1 = (b.min.z - r.O.z) * r.rD.z;
+    float tz2 = (b.max.z - r.O.z) * r.rD.z;
+    tmin = max(tmin, min(tz1, tz2));
+    tmax = min(tmax, max(tz1, tz2));
+    return tmax >= tmin && tmax >= 0;
+}
+
+bool intersection(box b, ray r)
+{
+    __m128 t1 = _mm_mul_ps(_mm_sub_ps(node->bmin4, O4), rD4);
+    __m128 t2 = _mm_mul_ps(_mm_sub_ps(node->bmax4, O4), rD4);
+    __m128 vmax4 = _mm_max_ps(t1, t2), vmin4 = _mm_min_ps(t1, t2);
+    float* vmax = (float*)&vmax4, * vmin = (float*)&vmin4;
+    float tmax = min(vmax[0], min(vmax[1], vmax[2]));
+    float tmin = max(vmin[0], max(vmin[1], vmin[2]));
+    return tmax >= tmin && tmax >= 0;
+}
+
+PrimaryHit BVHAccelerator::Traverse(const Ray& ray)
+{
+    auto& root = tree[2];
+    
 }
