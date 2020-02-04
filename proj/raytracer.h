@@ -24,6 +24,7 @@ public:
         Surface& screen, 
         const Scene& scene);
 
+    bool showBVH;
     unsigned threadCount;
     unsigned squareX;
     unsigned squareY;

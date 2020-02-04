@@ -97,6 +97,7 @@ void Game::Tick(float deltaTime)
 			ImGui::Text("Thread count: "); ImGui::SameLine(); ImGui::DragScalar("##threadCount", ImGuiDataType_U32,&renderer.threadCount, 0.2f, 0);
 			ImGui::Text("Square X: "); ImGui::SameLine(); ImGui::DragScalar("##squareX", ImGuiDataType_U32, &renderer.squareX, 0.2f, 0);
 			ImGui::Text("Square Y: "); ImGui::SameLine(); ImGui::DragScalar("##squareY", ImGuiDataType_U32, &renderer.squareY, 0.2f, 0);
+			ImGui::Text("Show BVH: "); ImGui::SameLine(); ImGui::Checkbox("##showBVH", &renderer.showBVH);
 
 		}
 		ImGui::End();

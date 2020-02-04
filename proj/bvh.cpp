@@ -147,10 +147,10 @@ float AABBIntersect(const float3& bmin, const float3& bmax, const Ray& r)
 BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray) const
 {
     auto& root = tree[2];
-    return Traverse(root, ray);
+    return Traverse(root, ray, 1);
 }
 
-BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray) const
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray, int depth) const
 {
     Hit hit;
     // Check if it should return the triangles
@@ -158,6 +158,7 @@ BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray) c
     {
         hit.count = node.count;
         hit.triangles = &triangles[node.leftFirst];
+        hit.depth = depth;
         return hit;
     }
 
@@ -170,15 +171,15 @@ BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray) c
 
     if (f1 < f2) // If left is closer
     {
-        auto hit = Traverse(left, ray);
+        auto hit = Traverse(left, ray,depth + 1);
         if (hit.count != 0) // Any hit?
-            return Traverse(right, ray);
+            return Traverse(right, ray, depth + 1);
     }
     else
     {
-        auto hit = Traverse(right, ray);
+        auto hit = Traverse(right, ray, depth + 1);
         if (hit.count != 0) // Any hit?
-            return Traverse(left, ray);
+            return Traverse(left, ray, depth + 1);
     }
     return hit;
 }

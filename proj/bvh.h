@@ -21,7 +21,7 @@ public:
 
     struct Hit
     {
-        float t;
+        int depth;
         // Is an array
         const Triangle* triangles;
         int count;
@@ -41,7 +41,7 @@ public:
 
 private:
 
-    Hit Traverse(const Node& node, const Ray& ray) const;
+    Hit Traverse(const Node& node, const Ray& ray, int depth) const;
 
     std::vector<Triangle> triangles;
     //std::unique_ptr<BVHNode[]> tree;

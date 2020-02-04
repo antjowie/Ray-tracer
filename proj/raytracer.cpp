@@ -40,7 +40,7 @@ PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3
 
 // I think the template optimizes the bool call since it generates a function definition
 template <bool earlyQuit = false>
-PrimaryHit Trace(Ray ray, const Scene& scene)
+PrimaryHit Trace(Ray ray, const Scene& scene, bool showBVH)
 {
     float d = -1.f;
     PrimaryHit ret;
@@ -50,6 +50,13 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
     for (const auto& model : scene.GetModels())
     {
         const BVHAccelerator::Hit& tris = model.bvh.Traverse(ray);
+
+        if (showBVH)
+        {
+            auto color = lerp(make_float3(0, 0xff, 0), make_float3(0xff, 0, 0), float(tris.depth) * 0.2f);
+            ret.color = ToPixel(color * 0.25f);
+        }
+
 
         auto tri = tris.triangles;
         for (int i = 0; i < tris.count; i++, tri++)
@@ -82,7 +89,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
     // No hit
     if (!ret.isHit)
     {
-        ret.color = ToPixel(ray.dir * 0xff);
+        ret.color += ToPixel(ray.dir * 0xff);
         return ret;
     }
 
@@ -94,7 +101,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
         Ray shadow{ ret.hit + dir*0.0001f, dir };
 
         // Pronounced as s-hit
-        auto shit = Trace<true>(shadow, scene);
+        auto shit = Trace<true>(shadow, scene,showBVH);
         if(!shit.isHit)
         {
             // This is very incorrect but temp
@@ -104,8 +111,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
         }
     }
 
-    ret.color = finalColor;
-    
+    ret.color += finalColor;
     
     return ret;
 }
@@ -122,7 +128,7 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
  */
 void RenderArea(
     Pixel* buffer, float3 e, float3 topLeft, float3 right, float3 down,
-    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
+    uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene, bool showBVH)
 {
     // Iterate over area
     for (uint j = y; j < y + h; j++)
@@ -139,7 +145,7 @@ void RenderArea(
             ray.origin = e;
             ray.dir = D;
 
-            auto hit = Trace(ray, scene);
+            auto hit = Trace(ray, scene,showBVH);
             buffer[j * bw + i] = hit.color;
             //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
@@ -171,7 +177,7 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
             AddTask([=, &screen, &scene]()
             {
                 RenderArea(
-                    screen.GetBuffer(), E, p0, right, down, i, j, squareX, squareY, width, height, scene);
+                    screen.GetBuffer(), E, p0, right, down, i, j, squareX, squareY, width, height, scene,showBVH);
             });
         }
     }
