@@ -1,5 +1,45 @@
 #include "precomp.h"
 
+namespace {
+    PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& vertex1, const float3& vertex2)
+    {
+        PrimaryHit hit;
+
+        //https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+        const float EPSILON = 0.0000001;
+        float3 edge1, edge2, h, s, q;
+        float a, f, u, v;
+        edge1 = vertex1 - vertex0;
+        edge2 = vertex2 - vertex0;
+        h = cross(ray.dir, edge2);
+        a = dot(edge1, h);
+        if (a > -EPSILON && a < EPSILON)
+            return hit;    // This ray is parallel to this triangle.
+        f = 1.0 / a;
+        s = ray.origin - vertex0;
+        u = f * dot(s, h);
+        if (u < 0.0 || u > 1.0)
+            return hit;
+        q = cross(s, edge1);
+        v = f * dot(ray.dir, q);
+        if (v < 0.0 || u + v > 1.0)
+            return hit;
+        // At this stage we can compute t to find out where the intersection point is on the line.
+        float t = f * dot(edge2, q);
+        if (t > EPSILON) // ray intersection
+        {
+            hit.isHit = true;
+            hit.t = t;
+            hit.hit = ray.origin + ray.dir * t;
+            //TODO hit.surfaceNormal = 
+
+            return hit;
+        }
+        else // This means that there is a line intersection but not a ray intersection.
+            return hit;
+    }
+}
+
 // Calculates the bounds that the triangles range contains
 void CalculateBounds(float3& bmin, float3& bmax, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
 {
@@ -19,12 +59,9 @@ void CalculateBounds(float3& bmin, float3& bmax, std::vector<BVHAccelerator::Tri
 }
 
 // Returns the offset to split, sorts the view that it receives
-uint Split(std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
+uint Split(const float3& bmin, const float3& bmax, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
 {
     // For now, simple midsplit :)
-    float3 bmin, bmax;
-    CalculateBounds(bmin, bmax, triangles, begin, count);
-
     // Get largest axis
     float3 length = bmax - bmin;
 
@@ -66,15 +103,14 @@ void Subdivide(BVHAccelerator::Node* tree, BVHAccelerator::Node& node, uint& ind
 
     // Reserve indices for self and right side
 
-    auto splitOffset = Split(triangles, begin, count);
+    auto splitOffset = Split(node.bmin,node.bmax,triangles, begin, count);
     auto left = index++;
     auto right = index++;
     node.leftFirst = left;
     node.count = 0;
     Subdivide(tree, tree[left], index, triangles, begin, splitOffset);
-    Subdivide(tree, tree[right], index, triangles, begin + splitOffset, splitOffset);
+    Subdivide(tree, tree[right], index, triangles, begin + splitOffset, count - splitOffset);
 }
-
 
 void BVHAccelerator::Build(const Model& model)
 {
@@ -104,13 +140,13 @@ void BVHAccelerator::Build(const Model& model)
     tree = new Node[triangles.size() * 2];
 
     auto& root = tree[0];
-    root.leftFirst = 2;
+    root.leftFirst = 1;
     root.count = 0;
     root.bmin = bmin;
     root.bmax = bmax;
 
     // Partition
-    auto index = root.leftFirst;
+    uint index = root.leftFirst;
 
     // Build children
     Subdivide(tree, tree[index], index, triangles, 0, triangles.size());
@@ -118,68 +154,93 @@ void BVHAccelerator::Build(const Model& model)
 
 float AABBIntersect(const float3& bmin, const float3& bmax, const Ray& r)
 {
-    float tx1 = (bmin.x - r.origin.x) * r.dir.x;
-    float tx2 = (bmax.x - r.origin.x) * r.dir.x;
-    float tmin = min(tx1, tx2);
-    float tmax = max(tx1, tx2);
-    float ty1 = (bmin.y - r.origin.y) * r.dir.y;
-    float ty2 = (bmax.y - r.origin.y) * r.dir.y;
-    tmin = max(tmin, min(ty1, ty2));
-    tmax = min(tmax, max(ty1, ty2));
-    float tz1 = (bmin.z - r.origin.z) * r.dir.z;
-    float tz2 = (bmax.z - r.origin.z) * r.dir.z;
-    tmin = max(tmin, min(tz1, tz2));
-    tmax = min(tmax, max(tz1, tz2));
-    return (tmax >= tmin && tmax >= 0.f) ? tmin : -1.f;
+    float tmin = (bmin.x - r.origin.x) / r.dir.x;
+    float tmax = (bmax.x - r.origin.x) / r.dir.x;
+
+    if (tmin > tmax) swap(tmin, tmax);
+
+    float tymin = (bmin.y - r.origin.y) / r.dir.y;
+    float tymax = (bmax.y - r.origin.y) / r.dir.y;
+
+    if (tymin > tymax) swap(tymin, tymax);
+
+    if ((tmin > tymax) || (tymin > tmax))
+        return -1.f;
+
+    if (tymin > tmin)
+        tmin = tymin;
+
+    if (tymax < tmax)
+        tmax = tymax;
+
+    float tzmin = (bmin.z - r.origin.z) / r.dir.z;
+    float tzmax = (bmax.z - r.origin.z) / r.dir.z;
+
+    if (tzmin > tzmax) swap(tzmin, tzmax);
+
+    if ((tmin > tzmax) || (tzmin > tmax))
+        return -1.f;
+
+    if (tzmin > tmin)
+        tmin = tzmin;
+
+    if (tzmax < tmax)
+        tmax = tzmax;
+
+    if (tmin > 0.f) return tmin;
+    else return -1.f;
 }
 
-//bool AABBIntersect(box b, ray r)
-//{
-//    __m128 t1 = _mm_mul_ps(_mm_sub_ps(node->bmin4, O4), rD4);
-//    __m128 t2 = _mm_mul_ps(_mm_sub_ps(node->bmax4, O4), rD4);
-//    __m128 vmax4 = _mm_max_ps(t1, t2), vmin4 = _mm_min_ps(t1, t2);
-//    float* vmax = (float*)&vmax4, * vmin = (float*)&vmin4;
-//    float tmax = min(vmax[0], min(vmax[1], vmax[2]));
-//    float tmin = max(vmin[0], max(vmin[1], vmin[2]));
-//    return tmax >= tmin && tmax >= 0;
-//}
-
-BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray) const
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray, PrimaryHit& pHit, bool quitOnIntersect) const
 {
-    auto& root = tree[2];
-    return Traverse(root, ray, 1);
+    auto& root = tree[tree[0].leftFirst];
+    return Traverse(root, ray, 0,pHit, quitOnIntersect);
 }
 
-BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray, int depth) const
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray, int depth, PrimaryHit& pHit, bool quitOnIntersect) const
 {
     Hit hit;
+    hit.count = 0;
+    hit.t = -1.f;
+    hit.depth = depth;
+    hit.triangles = &triangles[node.leftFirst];
+    
+    // Check if it intersects with this node
+    hit.t = AABBIntersect(node.bmin, node.bmax, ray);
+    if (hit.t == -1.f)
+    {
+        return hit;
+    }
+
     // Check if it should return the triangles
     if (node.count != 0)
     {
-        hit.count = node.count;
-        hit.triangles = &triangles[node.leftFirst];
-        hit.depth = depth;
         return hit;
+        //IntersectTriangles();
     }
 
     // Continue walking the tree
     auto& left = tree[node.leftFirst];
     auto& right = tree[node.leftFirst + 1];
 
-    auto f1 = AABBIntersect(left.bmin, left.bmax, ray);
-    auto f2 = AABBIntersect(right.bmin, right.bmax, ray);
-
-    if (f1 < f2) // If left is closer
+    auto h1 = Traverse(left, ray, depth + 1, pHit);
+    auto h2 = Traverse(right, ray, depth + 1, pHit);
+    hit.depth += h1.depth + h2.depth;
+    h1.depth = h2.depth = hit.depth;
+    if (h1.t <= 0.f && h2.t <= 0.f)
     {
-        auto hit = Traverse(left, ray,depth + 1);
-        if (hit.count != 0) // Any hit?
-            return Traverse(right, ray, depth + 1);
+        hit.t = -1.f;
+        return hit;
     }
-    else
+    if (h1.t > 0.f && h2.t > 0.f)
     {
-        auto hit = Traverse(right, ray, depth + 1);
-        if (hit.count != 0) // Any hit?
-            return Traverse(left, ray, depth + 1);
+        if (h1.t < h2.t)
+            return h1;
+        else
+            return h2;
     }
-    return hit;
+    if (h1.t > 0.f)
+        return h1;
+    if (h2.t > 0.f)
+        return h2;
 }

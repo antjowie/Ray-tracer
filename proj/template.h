@@ -491,6 +491,14 @@ inline uint ToPixel(const float3& comp)
 		((static_cast<uint>(std::fabsf(comp.z)) & 0xFF) << 16);
 }
 
+inline uint3 ToColor(const uint& color)
+{
+	return make_uint3(
+		(color >> 16 & 0xFF),
+		(color >> 8 & 0xFF),
+		(color >> 0 & 0xFF));
+}
+
 inline float2 fminf( float2 a, float2 b ) { return make_float2( fminf( a.x, b.x ), fminf( a.y, b.y ) ); }
 inline float3 fminf( float3 a, float3 b ) { return make_float3( fminf( a.x, b.x ), fminf( a.y, b.y ), fminf( a.z, b.z ) ); }
 inline float4 fminf( float4 a, float4 b ) { return make_float4( fminf( a.x, b.x ), fminf( a.y, b.y ), fminf( a.z, b.z ), fminf( a.w, b.w ) ); }

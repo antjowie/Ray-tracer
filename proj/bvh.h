@@ -3,6 +3,19 @@
 class Mesh;
 class Model;
 
+struct PrimaryHit
+{
+    bool isHit = false;
+    float t = 0.f;
+
+    const Model* model;
+    const Mesh* mesh;
+    float3 hit;
+    float3 surfaceNormal;
+
+    Pixel color;
+};
+
 /**
  * A Model has a BVH, in the end they are merged
  *
@@ -22,6 +35,7 @@ public:
     struct Hit
     {
         int depth;
+        float t;
         // Is an array
         const Triangle* triangles;
         int count;
@@ -37,11 +51,11 @@ public:
 
     void Build(const Model& model);
 
-    Hit Traverse(const Ray& ray) const;
+    Hit Traverse(const Ray& ray, PrimaryHit& pHit, bool quitOnIntersect = false) const;
 
 private:
 
-    Hit Traverse(const Node& node, const Ray& ray, int depth) const;
+    Hit Traverse(const Node& node, const Ray& ray, int depth, PrimaryHit& pHit, bool quitOnIntersect = false) const;
 
     std::vector<Triangle> triangles;
     //std::unique_ptr<BVHNode[]> tree;

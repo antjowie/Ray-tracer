@@ -8,11 +8,15 @@ void Game::Init()
 {
 	//obs = executor.make_observer<tf::ExecutorObserver>();
 	renderer.threadCount = std::thread::hardware_concurrency();
-	renderer.squareX = 16;
-	renderer.squareY = 16;
+	//renderer.squareX = 16;
+	//renderer.squareY = 16;
 
-	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf",mat4::Translate(0,0,4)));
-	
+	renderer.squareX = 512;
+	renderer.squareY = 512;
+
+	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(0, 0, 4)));
+	scene.Add(LoadGLTF("assets/Blender/weird.glb", mat4::Translate(0, 0, 4)));
+
 	// --- Make a floor
 	Model fmodel; Mesh fmesh;
 	fmesh.mat.color = 0x404040;
@@ -28,11 +32,11 @@ void Game::Init()
 	}
 	
 	fmodel.meshes.push_back(fmesh);
-	//scene.Add(std::move(fmodel));
+	scene.Add(std::move(fmodel));
 	// ---
 
 	// Add a light
-	scene.Add(PointLight{ make_float3(-1,3,2),20.f });
+	scene.Add(PointLight{ make_float3(-1,5,2),20.f });
 
 	//scene.Add(LoadGLTF("assets/Duck/glTF/Duck.gltf"));
 	std::cout << "-----\nDone loading" << '\n';

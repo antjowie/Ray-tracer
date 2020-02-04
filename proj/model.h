@@ -6,7 +6,7 @@
 
 struct Material
 {
-    Pixel color;
+    Pixel color = 0xff00ff;
 };
 
 struct Mesh

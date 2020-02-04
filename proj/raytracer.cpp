@@ -1,41 +1,43 @@
 #include "precomp.h"
 
-PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& vertex1, const float3& vertex2)
-{
-    PrimaryHit hit;
-
-    //https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-    const float EPSILON = 0.0000001;
-    float3 edge1, edge2, h, s, q;
-    float a, f, u, v;
-    edge1 = vertex1 - vertex0;
-    edge2 = vertex2 - vertex0;
-    h = cross(ray.dir, edge2);
-    a = dot(edge1, h);
-    if (a > -EPSILON && a < EPSILON)
-        return hit;    // This ray is parallel to this triangle.
-    f = 1.0 / a;
-    s = ray.origin - vertex0;
-    u = f * dot(s, h);
-    if (u < 0.0 || u > 1.0)
-        return hit;
-    q = cross(s, edge1);
-    v = f * dot(ray.dir, q);
-    if (v < 0.0 || u + v > 1.0)
-        return hit;
-    // At this stage we can compute t to find out where the intersection point is on the line.
-    float t = f * dot(edge2, q);
-    if (t > EPSILON) // ray intersection
+namespace {
+    PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& vertex1, const float3& vertex2)
     {
-        hit.isHit = true;
-        hit.t = t;
-        hit.hit = ray.origin + ray.dir * t;
-        //TODO hit.surfaceNormal = 
+        PrimaryHit hit;
 
-        return hit;
+        //https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+        const float EPSILON = 0.0000001;
+        float3 edge1, edge2, h, s, q;
+        float a, f, u, v;
+        edge1 = vertex1 - vertex0;
+        edge2 = vertex2 - vertex0;
+        h = cross(ray.dir, edge2);
+        a = dot(edge1, h);
+        if (a > -EPSILON && a < EPSILON)
+            return hit;    // This ray is parallel to this triangle.
+        f = 1.0 / a;
+        s = ray.origin - vertex0;
+        u = f * dot(s, h);
+        if (u < 0.0 || u > 1.0)
+            return hit;
+        q = cross(s, edge1);
+        v = f * dot(ray.dir, q);
+        if (v < 0.0 || u + v > 1.0)
+            return hit;
+        // At this stage we can compute t to find out where the intersection point is on the line.
+        float t = f * dot(edge2, q);
+        if (t > EPSILON) // ray intersection
+        {
+            hit.isHit = true;
+            hit.t = t;
+            hit.hit = ray.origin + ray.dir * t;
+            //TODO hit.surfaceNormal = 
+
+            return hit;
+        }
+        else // This means that there is a line intersection but not a ray intersection.
+            return hit;
     }
-    else // This means that there is a line intersection but not a ray intersection.
-        return hit;
 }
 
 // I think the template optimizes the bool call since it generates a function definition
@@ -44,75 +46,96 @@ PrimaryHit Trace(Ray ray, const Scene& scene, bool showBVH)
 {
     float d = -1.f;
     PrimaryHit ret;
+    float3 color = make_float3(0);
+    float3 overlay= make_float3(0);
     ret.t = std::numeric_limits<float>::max();
 
     // Get closest intersection
     for (const auto& model : scene.GetModels())
     {
-        const BVHAccelerator::Hit& tris = model.bvh.Traverse(ray);
+        const BVHAccelerator::Hit& tris = model.bvh.Traverse(ray,ret);
 
-        if (showBVH)
+        if (showBVH && tris.depth != 0)
         {
-            auto color = lerp(make_float3(0, 0xff, 0), make_float3(0xff, 0, 0), float(tris.depth) * 0.2f);
-            ret.color = ToPixel(color * 0.25f);
+            //color += lerp(make_float3(0, 0xff, 0), make_float3(0xff, 0, 0), float(tris.depth) * 0.2f);
+            //color *= 0.2f;
+            overlay = lerp(make_float3(0, 0xff, 0), make_float3(0xff, 0, 0), float(tris.depth) * 0.2f);
+            overlay *= 0.2f;
+
+            //overlay = make_float3(0, 0xff, 0);
         }
+    }
 
-
-        auto tri = tris.triangles;
-        for (int i = 0; i < tris.count; i++, tri++)
+    // Mabi ignore
+    // Get closest intersection
+    for (const auto& model : scene.GetModels())
+    {
+        for (const auto& mesh : model.meshes)
         {
-            const auto& face = tri->face;
-
-            auto h = TriangleIntersect(
-                ray, face[0], face[1], face[2]);
-
-            if (h.isHit)
+            // Iterate over each face
+            for (size_t i = 0; i < mesh.faces.size(); i++)
             {
-                // If no hit yet
-                if (!ret.isHit || h.t < ret.t)
-                {
-                    ret = h;
-                    ret.model = &model;
-                    ret.mesh = tri->mesh;
+                const auto& face = mesh.faces[i];
 
-                    ret.surfaceNormal = tri->normal;
-                }
+                auto h = TriangleIntersect(
+                    ray, face[0], face[1], face[2]);
 
-                if (earlyQuit)
+                if (h.isHit)
                 {
-                    return ret;
+                    // If no hit yet
+                    if (!ret.isHit || h.t < ret.t)
+                    {
+                        ret = h;
+                        ret.model = &model;
+                        ret.mesh = &mesh;
+
+                        ret.surfaceNormal = mesh.normals[i];
+                    }
+
+                    if (earlyQuit)
+                    {
+                        return ret;
+                    }
                 }
             }
-        }        
+        }
+
     }
 
-    // No hit
+
+    // No hit, do background
     if (!ret.isHit)
     {
-        ret.color += ToPixel(ray.dir * 0xff);
-        return ret;
+        color += (ray.dir * 0xff);
     }
-
-    // Cast shadow
-    Pixel finalColor = 0;
-    for(const auto& light: scene.GetLights())
+    else
     {
-        float3 dir = normalize(light.pos - ret.hit);
-        Ray shadow{ ret.hit + dir*0.0001f, dir };
-
-        // Pronounced as s-hit
-        auto shit = Trace<true>(shadow, scene,showBVH);
-        if(!shit.isHit)
+        // Cast shadow
+        for(const auto& light: scene.GetLights())
         {
-            // This is very incorrect but temp
-            float l = 1.f; // Light intensity
+            float3 dir = normalize(light.pos - ret.hit);
+            Ray shadow{ ret.hit + dir*0.0001f, dir };
 
-            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ret.surfaceNormal,shadow.dir));
+            // Pronounced as s-hit
+            auto shit = Trace<true>(shadow, scene,showBVH);
+            if(!shit.isHit)
+            {
+                // This is very incorrect but temp
+                float l = 100.f; // Light intensity
+
+                auto light = ToColor(ret.mesh->mat.color) * l * max(0.f,dot(ret.surfaceNormal,shadow.dir));
+                color.x += light.x;
+                color.y += light.y;
+                color.z += light.z;
+            }
         }
     }
 
-    ret.color += finalColor;
-    
+    // Process finalColor
+    color = clamp(color, 0.f, 0xff);
+
+    ret.color = ToPixel(color);
+    ret.color = AddBlend(ret.color, ToPixel(overlay));
     return ret;
 }
 
