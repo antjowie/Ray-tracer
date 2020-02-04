@@ -56,26 +56,27 @@ uint Split(std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint co
 void Subdivide(BVHAccelerator::Node* tree, BVHAccelerator::Node& node, uint& index, std::vector<BVHAccelerator::Triangle>& triangles, uint begin, uint count)
 {
     // If we are looking at 3 triangles, we will just refer to them
+    CalculateBounds(node.bmin, node.bmax, triangles, begin, count);
     if (count < 3)
     {
-        CalculateBounds(node.bmin, node.bmax, triangles, begin, count);
         node.leftFirst = begin;
         node.count = count;
         return;
     }
 
     // Reserve indices for self and right side
-    index += 2;
-    node.count = 0;
 
     auto splitOffset = Split(triangles, begin, count);
-    auto right = index - 1;
-    Subdivide(tree, tree[index], index, triangles, begin, splitOffset);
+    auto left = index++;
+    auto right = index++;
+    node.leftFirst = left;
+    node.count = 0;
+    Subdivide(tree, tree[left], index, triangles, begin, splitOffset);
     Subdivide(tree, tree[right], index, triangles, begin + splitOffset, splitOffset);
 }
 
 
-void BVHAccelerator::Build(const Model* const model)
+void BVHAccelerator::Build(const Model& model)
 {
     if (tree) delete[] tree;
 
@@ -83,7 +84,7 @@ void BVHAccelerator::Build(const Model* const model)
     // While filling, calculate root bounds
     float3 bmin = make_float3(std::numeric_limits<float>::max());
     float3 bmax = make_float3(std::numeric_limits<float>::min());
-    for (const auto& mesh : model->meshes)
+    for (const auto& mesh : model.meshes)
     {
         for (int i = 0; i < mesh.faces.size(); i++)
         {
@@ -143,13 +144,13 @@ float AABBIntersect(const float3& bmin, const float3& bmax, const Ray& r)
 //    return tmax >= tmin && tmax >= 0;
 //}
 
-BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray)
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Ray& ray) const
 {
     auto& root = tree[2];
     return Traverse(root, ray);
 }
 
-BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray)
+BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray) const
 {
     Hit hit;
     // Check if it should return the triangles
@@ -179,4 +180,5 @@ BVHAccelerator::Hit BVHAccelerator::Traverse(const Node& node, const Ray& ray)
         if (hit.count != 0) // Any hit?
             return Traverse(left, ray);
     }
+    return hit;
 }

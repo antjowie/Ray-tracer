@@ -44,40 +44,39 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
 {
     float d = -1.f;
     PrimaryHit ret;
+    ret.t = std::numeric_limits<float>::max();
 
     // Get closest intersection
     for (const auto& model : scene.GetModels())
     {
-        for (const auto& mesh : model.meshes)
+        const BVHAccelerator::Hit& tris = model.bvh.Traverse(ray);
+
+        auto tri = tris.triangles;
+        for (int i = 0; i < tris.count; i++, tri++)
         {
-            // Iterate over each face
-            for (size_t i = 0; i < mesh.faces.size(); i++)
+            const auto& face = tri->face;
+
+            auto h = TriangleIntersect(
+                ray, face[0], face[1], face[2]);
+
+            if (h.isHit)
             {
-                const auto& face = mesh.faces[i];
-
-                auto h = TriangleIntersect(
-                    ray, face[0], face[1], face[2]);
-
-                if (h.isHit)
+                // If no hit yet
+                if (!ret.isHit || h.t < ret.t)
                 {
-                    // If no hit yet
-                    if (!ret.isHit || h.t < ret.t)
-                    {
-                        ret = h;
-                        ret.model = &model;
-                        ret.mesh = &mesh;
+                    ret = h;
+                    ret.model = &model;
+                    ret.mesh = tri->mesh;
 
-                        ret.surfaceNormal = mesh.normals[i];
-                    }
+                    ret.surfaceNormal = tri->normal;
+                }
 
-                    if (earlyQuit)
-                    {
-                        return ret;
-                    }
+                if (earlyQuit)
+                {
+                    return ret;
                 }
             }
-        }
-        
+        }        
     }
 
     // No hit

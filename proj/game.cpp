@@ -12,9 +12,7 @@ void Game::Init()
 	renderer.squareY = 16;
 
 	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf",mat4::Translate(0,0,4)));
-	BVHAccelerator acc;
-	acc.Build(scene.GetModels().front());
-
+	
 	// --- Make a floor
 	Model fmodel; Mesh fmesh;
 	fmesh.mat.color = 0x404040;
@@ -30,7 +28,7 @@ void Game::Init()
 	}
 	
 	fmodel.meshes.push_back(fmesh);
-	scene.Add(std::move(fmodel));
+	//scene.Add(std::move(fmodel));
 	// ---
 
 	// Add a light
