@@ -30,7 +30,15 @@ class Renderer
 public:
     void Render(const mat4& t, Surface& screen, const Scene& scene);
 
-    unsigned threadCount;
+    // Used to reset renderer state
+    void OnMove();
+
+    unsigned Spp() const;
+
     unsigned squareX;
     unsigned squareY;
+
+
+private:
+    unsigned spp = 1;
 };

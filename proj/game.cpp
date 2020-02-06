@@ -7,7 +7,6 @@ tf::ExecutorObserver* obs = nullptr;
 void Game::Init()
 {
 	//obs = executor.make_observer<tf::ExecutorObserver>();
-	renderer.threadCount = std::thread::hardware_concurrency();
 	renderer.squareX = 16;
 	renderer.squareY = 16;
 
@@ -89,12 +88,12 @@ void Game::Tick(float deltaTime)
 			ImGui::Text("FPS: %f", 1.f / dt);
 			ImGui::Text("Window: %i %i", x,y);
 			ImGui::Text("Render: %i %i", screen->GetWidth(), screen->GetHeight());
+			ImGui::Text("Spp: %i", renderer.Spp());
 			ImGui::Text("Camera speed: "); ImGui::SameLine(); ImGui::DragFloat("##camera", &speed,0.2f,0.f);
 		}
 
 		if (ImGui::CollapsingHeader("Renderer", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::Text("Thread count: "); ImGui::SameLine(); ImGui::DragScalar("##threadCount", ImGuiDataType_U32,&renderer.threadCount, 0.2f, 0);
 			ImGui::Text("Square X: "); ImGui::SameLine(); ImGui::DragScalar("##squareX", ImGuiDataType_U32, &renderer.squareX, 0.2f, 0);
 			ImGui::Text("Square Y: "); ImGui::SameLine(); ImGui::DragScalar("##squareY", ImGuiDataType_U32, &renderer.squareY, 0.2f, 0);
 
@@ -144,5 +143,10 @@ void Game::MoveCamera()
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
+	if (rotX != 0 || rotY != 0 || dot(movement, movement) != 0.f)
+	{
+		renderer.OnMove();
+	}
+	
 	camera = camera * mat4::RotateX(rotY) * mat4::RotateY(rotX) * mat4::Translate(movement * speed * clamp(dt,0.f,1.f));
 }

@@ -139,7 +139,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
  * hw: buffer height
  */
 void RenderArea(
-    Pixel* buffer, float3 e, float3 topLeft, float3 right, float3 down,
+    Pixel* buffer, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
     uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
 {
     // Iterate over area
@@ -150,7 +150,11 @@ void RenderArea(
         {
             // Generate ray
             float u = (float)i / bw;
-            float3 P = topLeft + u * right + v * down;
+            float px = 1.f / (float)bw;
+            float py = 1.f / (float)bh;
+            float3 r = u * right + px * Rand(1.f);
+            float3 d = v * down + py * Rand(1.f);
+            float3 P = topLeft + r + d;
             float3 D = normalize(P - e);
 
             Ray ray;
@@ -158,7 +162,16 @@ void RenderArea(
             ray.dir = D;
 
             auto hit = Trace(ray, scene);
-            buffer[j * bw + i] = hit.color;
+            
+            float scale = 1.0f / spp;
+            float3 p = ToColor(buffer[j * bw + i]);
+            p *= 1.f - scale;
+            p += hit.color * (scale);
+
+            buffer[j * bw + i] = ToPixel(p);
+            //int red = sqrtf(min(1.f, p.x)) * 255;
+            //int green = sqrtf(min(1.f, p.y)) * 255;
+            //int blue = sqrtf(min(1.f, p.z)) * 255;
             //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }
@@ -189,7 +202,7 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
             AddTask([=, &screen, &scene]()
             {
                 RenderArea(
-                    screen.GetBuffer(), E, p0, right, down, i, j, squareX, squareY, width, height, scene);
+                    screen.GetBuffer(), spp, E, p0, right, down, i, j, squareX, squareY, width, height, scene);
             });
         }
     }
@@ -198,4 +211,15 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     WaitForAll();
 
     taskflow.clear();
+    spp++;
+}
+
+void Renderer::OnMove()
+{
+    spp = 1;
+}
+
+unsigned Renderer::Spp() const
+{
+    return spp;
 }

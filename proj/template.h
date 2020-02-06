@@ -973,7 +973,7 @@ inline float3 ToColor(const uint color)
 	return make_float3(
 		(color & 0x0000ff) >> 0,
 		(color & 0x00ff00) >> 8,
-		(color & 0xff0000) >> 16) / 255.f;
+		(color & 0xff0000) >> 16) / 255;
 }
 
 // EOF
