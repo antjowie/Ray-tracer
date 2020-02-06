@@ -37,7 +37,7 @@ public:
 
     unsigned SampleCount() const;
     unsigned MaxSampleCount() const;
-
+    
     unsigned squareX;
     unsigned squareY;
 
@@ -45,6 +45,7 @@ public:
 private:
     unsigned spp = 0;
     unsigned maxSampleCount;
+    unsigned pixelCount;
 
     std::unique_ptr<float3[]> accumelator;
 };

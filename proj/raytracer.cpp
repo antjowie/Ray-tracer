@@ -165,7 +165,6 @@ void RenderArea(
             
             accumelator[j * bw + i] += ToColor(hit.color);
             float3 p = accumelator[j * bw + i];
-
             float scale = 1.0f / spp;
             p *= scale;
             
@@ -178,18 +177,19 @@ void Renderer::Init(unsigned pixelCount, unsigned maxSampleCount)
 {
     squareX = 16;
     squareY = 16;
+    this->pixelCount = pixelCount;
     this->maxSampleCount = maxSampleCount;
     accumelator = std::make_unique<float3[]>(pixelCount);
-    memset(accumelator.get(), 0, pixelCount * 4);
+    memset(accumelator.get(), 0, pixelCount * sizeof(float3));
 }
 
 
 void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
 {
-    if (spp >= maxSampleCount - 1)
-        return;
-
+    if (spp >= maxSampleCount) { return; }
+    //screen.Clear(0xAAAA00);
     spp++;
+
     // Calculate eye and screen
     float3 p0 = t.TransformPoint(make_float3(-1, 1, 1)); // top-left
     float3 p1 = t.TransformPoint(make_float3(1, 1, 1)); // top-right
@@ -202,7 +202,8 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     const uint height = screen.GetHeight();
 
     // If we want no MT :(
-    //RenderArea(screen.GetBuffer(), E, p0, right, down, 0, 0, width,height, width, height, scene);
+    //RenderArea(
+    //    screen.GetBuffer(), accumelator.get(), spp, E, p0, right, down, 0, 0, width, height, width, height, scene);
     //return;
 
     // Calculate the tasks to render
@@ -227,6 +228,7 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
 void Renderer::OnMove()
 {
     spp = 0;
+    memset(accumelator.get(), 0, pixelCount * sizeof(float3));
 }
 
 unsigned Renderer::SampleCount() const
