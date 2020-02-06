@@ -1,14 +1,14 @@
 #include "precomp.h" // include (only) this in every .cpp file
 
 tf::ExecutorObserver* obs = nullptr;
+
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
 void Game::Init()
 {
 	//obs = executor.make_observer<tf::ExecutorObserver>();
-	renderer.squareX = 16;
-	renderer.squareY = 16;
+	renderer.Init(screen->GetWidth() * screen->GetHeight());
 
 	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf",mat4::Translate(0,0,4)));
 	
@@ -62,12 +62,10 @@ void Game::Tick(float deltaTime)
 	dt = deltaTime; // For camera. TODO make input manager
 
 	// clear the graphics window
-	screen->Clear(deltaTime);
+	//screen->Clear(deltaTime);
 
 	MoveCamera();
 	renderer.Render(camera, *screen, scene);
-
-
 
 	// ImGui stuff
 	{
@@ -88,7 +86,7 @@ void Game::Tick(float deltaTime)
 			ImGui::Text("FPS: %f", 1.f / dt);
 			ImGui::Text("Window: %i %i", x,y);
 			ImGui::Text("Render: %i %i", screen->GetWidth(), screen->GetHeight());
-			ImGui::Text("Spp: %i", renderer.Spp());
+			ImGui::Text("Samples: %i/%i", renderer.SampleCount(), renderer.MaxSampleCount());
 			ImGui::Text("Camera speed: "); ImGui::SameLine(); ImGui::DragFloat("##camera", &speed,0.2f,0.f);
 		}
 

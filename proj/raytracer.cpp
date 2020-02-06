@@ -139,7 +139,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
  * hw: buffer height
  */
 void RenderArea(
-    Pixel* buffer, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
+    Pixel* buffer, float3* accumelator, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
     uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
 {
     // Iterate over area
@@ -163,22 +163,33 @@ void RenderArea(
 
             auto hit = Trace(ray, scene);
             
-            float scale = 1.0f / spp;
-            float3 p = ToColor(buffer[j * bw + i]);
-            p *= 1.f - scale;
-            p += hit.color * (scale);
+            accumelator[j * bw + i] += ToColor(hit.color);
+            float3 p = accumelator[j * bw + i];
 
+            float scale = 1.0f / spp;
+            p *= scale;
+            
             buffer[j * bw + i] = ToPixel(p);
-            //int red = sqrtf(min(1.f, p.x)) * 255;
-            //int green = sqrtf(min(1.f, p.y)) * 255;
-            //int blue = sqrtf(min(1.f, p.z)) * 255;
-            //buffer[i * bw + j] = ScaleColor(c,dot(ray.dir,hit.surfaceNormal) * 0xff);
         }
     }
 }
 
+void Renderer::Init(unsigned pixelCount, unsigned maxSampleCount)
+{
+    squareX = 16;
+    squareY = 16;
+    this->maxSampleCount = maxSampleCount;
+    accumelator = std::make_unique<float3[]>(pixelCount);
+    memset(accumelator.get(), 0, pixelCount * 4);
+}
+
+
 void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
 {
+    if (spp >= maxSampleCount - 1)
+        return;
+
+    spp++;
     // Calculate eye and screen
     float3 p0 = t.TransformPoint(make_float3(-1, 1, 1)); // top-left
     float3 p1 = t.TransformPoint(make_float3(1, 1, 1)); // top-right
@@ -202,7 +213,7 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
             AddTask([=, &screen, &scene]()
             {
                 RenderArea(
-                    screen.GetBuffer(), spp, E, p0, right, down, i, j, squareX, squareY, width, height, scene);
+                    screen.GetBuffer(), accumelator.get(), spp, E, p0, right, down, i, j, squareX, squareY, width, height, scene);
             });
         }
     }
@@ -211,15 +222,19 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     WaitForAll();
 
     taskflow.clear();
-    spp++;
 }
 
 void Renderer::OnMove()
 {
-    spp = 1;
+    spp = 0;
 }
 
-unsigned Renderer::Spp() const
+unsigned Renderer::SampleCount() const
 {
     return spp;
+}
+
+unsigned Renderer::MaxSampleCount() const
+{
+    return maxSampleCount;
 }

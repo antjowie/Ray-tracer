@@ -28,17 +28,23 @@ struct PrimaryHit
 class Renderer
 {
 public:
+    void Init(unsigned bufferSize, unsigned maxSampleCount = 128);
+
     void Render(const mat4& t, Surface& screen, const Scene& scene);
 
     // Used to reset renderer state
     void OnMove();
 
-    unsigned Spp() const;
+    unsigned SampleCount() const;
+    unsigned MaxSampleCount() const;
 
     unsigned squareX;
     unsigned squareY;
 
 
 private:
-    unsigned spp = 1;
+    unsigned spp = 0;
+    unsigned maxSampleCount;
+
+    std::unique_ptr<float3[]> accumelator;
 };
