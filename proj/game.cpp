@@ -8,7 +8,7 @@ tf::ExecutorObserver* obs = nullptr;
 void Game::Init()
 {
 	//obs = executor.make_observer<tf::ExecutorObserver>();
-	renderer.Init(screen->GetWidth() * screen->GetHeight(),128);
+	renderer.Init(*screen, scene, screen->GetWidth() * screen->GetHeight(),128);
 
 	scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf",mat4::Translate(0,0,4)));
 	

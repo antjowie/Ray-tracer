@@ -173,7 +173,7 @@ void RenderArea(
     }
 }
 
-void Renderer::Init(unsigned pixelCount, unsigned maxSampleCount)
+void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, unsigned maxSampleCount)
 {
     squareX = 16;
     squareY = 16;
@@ -181,6 +181,20 @@ void Renderer::Init(unsigned pixelCount, unsigned maxSampleCount)
     this->maxSampleCount = maxSampleCount;
     accumelator = std::make_unique<float3[]>(pixelCount);
     memset(accumelator.get(), 0, pixelCount * sizeof(float3));
+
+    for (uint j = 0; j < screen.GetHeight() ; j += squareY)
+    {
+        for (uint i = 0; i < screen.GetWidth(); i += squareX)
+        {
+            AddTask([&, i, j]()
+            {
+                RenderArea(
+                    screen.GetBuffer(), 
+                    accumelator.get(), spp, E, p0, right, down, i, j, squareX, squareY, 
+                    screen.GetWidth(), screen.GetHeight(), scene);
+            });
+        }
+    }
 }
 
 
@@ -191,15 +205,12 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     spp++;
 
     // Calculate eye and screen
-    float3 p0 = t.TransformPoint(make_float3(-1, 1, 1)); // top-left
-    float3 p1 = t.TransformPoint(make_float3(1, 1, 1)); // top-right
-    float3 p2 = t.TransformPoint(make_float3(-1, -1, 1)); // bottom-left
-    float3 E = t.TransformPoint(make_float3(0, 0, 0));
-    float3 right = p1 - p0;
-    float3 down = p2 - p0;
-
-    const uint width = screen.GetWidth();
-    const uint height = screen.GetHeight();
+    p0 = t.TransformPoint(make_float3(-1, 1, 1)); // top-left
+    p1 = t.TransformPoint(make_float3(1, 1, 1)); // top-right
+    p2 = t.TransformPoint(make_float3(-1, -1, 1)); // bottom-left
+    E = t.TransformPoint(make_float3(0, 0, 0));
+    right = p1 - p0;
+    down = p2 - p0;
 
     // If we want no MT :(
     //RenderArea(
@@ -207,22 +218,8 @@ void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
     //return;
 
     // Calculate the tasks to render
-    for (uint j = 0; j < height; j += squareY)
-    {
-        for (uint i = 0; i < width; i += squareX)
-        {
-            AddTask([=, &screen, &scene]()
-            {
-                RenderArea(
-                    screen.GetBuffer(), accumelator.get(), spp, E, p0, right, down, i, j, squareX, squareY, width, height, scene);
-            });
-        }
-    }
-
     RunTasks();
     WaitForAll();
-
-    taskflow.clear();
 }
 
 void Renderer::OnMove()
