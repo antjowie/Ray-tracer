@@ -100,12 +100,12 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
     // No hit at all
     if (!ret.isHit)
     {
-        ret.color = ToPixel(ray.dir * 0xff);
+        ret.color = ToPixel(ray.dir);
         return ret;
     }
 
     // Do whitted shading
-    Pixel finalColor = 0;
+    float3 finalColor;
     for(const auto& light: scene.GetLights())
     {
         float3 dir = normalize(light.pos - ret.hit);
@@ -118,11 +118,12 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
             // This is very incorrect but temp
             float l = 1.f; // Light intensity
 
-            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ret.normal,shadow.dir));
+            finalColor += ToColor(ret.mesh->mat.color) * l * max(0.f,dot(ret.normal,shadow.dir));
         }
     }
 
-    ret.color = finalColor;
+    
+    ret.color = ToPixel(finalColor);
     
     return ret;
 }

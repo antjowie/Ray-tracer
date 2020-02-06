@@ -479,14 +479,6 @@ inline float4 operator/( float4 a, float b ) { return make_float4( a.x / b, a.y 
 inline void operator/=( float4 &a, float b ) { a.x /= b;	a.y /= b;	a.z /= b;	a.w /= b; }
 inline float4 operator/( float b, float4 a ) { return make_float4( b / a.x, b / a.y, b / a.z, b / a.w ); }
 
-inline uint ToPixel(const float3& comp)
-{
-	return
-		((static_cast<uint>(std::fabsf(comp.x)) & 0xFF)) |
-		((static_cast<uint>(std::fabsf(comp.y)) & 0xFF) << 8) |
-		((static_cast<uint>(std::fabsf(comp.z)) & 0xFF) << 16);
-}
-
 inline float2 fminf( float2 a, float2 b ) { return make_float2( fminf( a.x, b.x ), fminf( a.y, b.y ) ); }
 inline float3 fminf( float3 a, float3 b ) { return make_float3( fminf( a.x, b.x ), fminf( a.y, b.y ), fminf( a.z, b.z ) ); }
 inline float4 fminf( float4 a, float4 b ) { return make_float4( fminf( a.x, b.x ), fminf( a.y, b.y ), fminf( a.z, b.z ), fminf( a.w, b.w ) ); }
@@ -962,5 +954,26 @@ public:
 	quat scale( float s ) const { return quat( w * s, x * s, y * s, z * s ); }
 	float w = 1, x = 0, y = 0, z = 0;
 };
+
+inline uint ToPixel(const float3& normalized)
+{
+	float3 normalizedColor = clamp(normalized, 0.f, 1.f) * static_cast<float>(0XFF);
+
+	uint32_t color = (
+		static_cast<uint>(normalizedColor.x) |
+		(static_cast<uint>(normalizedColor.y) << 8) |
+		(static_cast<uint>(normalizedColor.z) << 16)
+		);
+
+	return color;
+}
+
+inline float3 ToColor(const uint color)
+{
+	return make_float3(
+		(color & 0x0000ff) >> 0,
+		(color & 0x00ff00) >> 8,
+		(color & 0xff0000) >> 16) / 255.f;
+}
 
 // EOF

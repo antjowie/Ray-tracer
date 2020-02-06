@@ -6,18 +6,17 @@
 * RT-centric Game Dev
 
 ### Introduction
-* Mon  
+* Mon 1  
 **None**
-* Thu  
+* Thu 2  
 **A solid Whitted style ray tracer**  
-Render time: 11s
-* Fri  
+* Fri 3  
 Optimization -> SIMD -> **5x faster**
-* Mon  
+* Mon 4  
 Accel structures -> refitting -> **perhaps realtime**
-* Thu  
+* Thu 5  
 Monte-Carlo, many polish -> path tracing -> **Cook or (DOF, area lights) Kajiya (path tracer)**
-* Tue  
+* Tue 6  
 Even faster, quality of randomness -> sampling, estimation -> **Efficiency**
-* Fri  
+* Fri 7  
 Future work -> path guiding -> **Great product**
