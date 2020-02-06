@@ -15,12 +15,12 @@ struct Ray
 struct PrimaryHit
 {
     bool isHit = false;
-    float t = 0.f;
+    float t = -1.f;
 
     const Model* model;
     const Mesh* mesh;
     float3 hit;
-    float3 surfaceNormal;
+    float3 normal;
     
     Pixel color;
 };

@@ -1,10 +1,7 @@
 #include "precomp.h"
 
-
-PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& vertex1, const float3& vertex2)
+float TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& vertex1, const float3& vertex2)
 {
-    PrimaryHit hit;
-
     //https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
     const float EPSILON = 0.0000001;
     float3 edge1, edge2, h, s, q;
@@ -14,81 +11,100 @@ PrimaryHit TriangleIntersect(const Ray& ray, const float3& vertex0, const float3
     h = cross(ray.dir, edge2);
     a = dot(edge1, h);
     if (a > -EPSILON && a < EPSILON)
-        return hit;    // This ray is parallel to this triangle.
+        return -1.f;    // This ray is parallel to this triangle.
     f = 1.0 / a;
     s = ray.origin - vertex0;
     u = f * dot(s, h);
     if (u < 0.0 || u > 1.0)
-        return hit;
+        return -1.f;
     q = cross(s, edge1);
     v = f * dot(ray.dir, q);
     if (v < 0.0 || u + v > 1.0)
-        return hit;
+        return -1.f;
     // At this stage we can compute t to find out where the intersection point is on the line.
     float t = f * dot(edge2, q);
     if (t > EPSILON) // ray intersection
     {
-        hit.isHit = true;
-        hit.t = t;
-        hit.hit = ray.origin + ray.dir * t;
-        //TODO hit.surfaceNormal = 
-
-        return hit;
+        return t;
     }
     else // This means that there is a line intersection but not a ray intersection.
-        return hit;
+        return -1.f;
+}
+
+struct TraceHit
+{
+    float t = -1.f;
+    float3 normal;
+};
+
+TraceHit GetIntersection(const Ray& ray, const Mesh& mesh, bool quitOnIntersect = false)
+{
+    TraceHit ret;
+
+    // Iterate over each face
+    for (size_t i = 0; i < mesh.faces.size(); i++)
+    {
+        const auto& face = mesh.faces[i];
+
+        auto t = TriangleIntersect(
+            ray, face[0], face[1], face[2]);
+
+        // Check hit
+        if (t > 0.f && (t < ret.t || ret.t == -1.f))
+        {
+            ret.t = t;
+            ret.normal = mesh.normals[i];
+
+            if (quitOnIntersect)
+            {
+                return ret;
+            }
+        }
+    }
+
+    return ret;
 }
 
 // I think the template optimizes the bool call since it generates a function definition
-template <bool earlyQuit = false>
-PrimaryHit Trace(Ray ray, const Scene& scene)
+PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = false)
 {
-    float d = -1.f;
     PrimaryHit ret;
 
     // Get closest intersection
     for (const auto& model : scene.GetModels())
-    {
+    {        
         for (const auto& mesh : model.meshes)
         {
-            // Iterate over each face
-            for (size_t i = 0; i < mesh.faces.size(); i++)
+            auto hit = GetIntersection(ray, mesh, quitOnIntersect);
+
+            if (hit.t > 0.f && (ret.t == -1.f || hit.t < ret.t))
             {
-                const auto& face = mesh.faces[i];
+                ret.isHit = true;
 
-                auto h = TriangleIntersect(
-                    ray, face[0], face[1], face[2]);
+                ret.t = hit.t;
+                ret.model = &model;
+                ret.mesh = &mesh;
 
-                if (h.isHit)
+                ret.hit = ray.origin + ray.dir * hit.t;
+                ret.normal = hit.normal;
+
+                if (quitOnIntersect)
                 {
-                    // If no hit yet
-                    if (!ret.isHit || h.t < ret.t)
-                    {
-                        ret = h;
-                        ret.model = &model;
-                        ret.mesh = &mesh;
-
-                        ret.surfaceNormal = mesh.normals[i];
-                    }
-
-                    if (earlyQuit)
-                    {
-                        return ret;
-                    }
+                    ret.color = ToPixel(ray.dir * 0xff);
+                    return ret;
                 }
             }
         }
-        
     }
 
-    // No hit
+    // No hit at all
     if (!ret.isHit)
     {
         ret.color = ToPixel(ray.dir * 0xff);
         return ret;
     }
 
-    // Cast shadow
+    // Do whitted shading
     Pixel finalColor = 0;
     for(const auto& light: scene.GetLights())
     {
@@ -96,18 +112,17 @@ PrimaryHit Trace(Ray ray, const Scene& scene)
         Ray shadow{ ret.hit + dir*0.0001f, dir };
 
         // Pronounced as s-hit
-        auto shit = Trace<true>(shadow, scene);
+        auto shit = Trace(shadow, scene, true);
         if(!shit.isHit)
         {
             // This is very incorrect but temp
             float l = 1.f; // Light intensity
 
-            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ret.surfaceNormal,shadow.dir));
+            finalColor += ret.mesh->mat.color * l * max(0.f,dot(ret.normal,shadow.dir));
         }
     }
 
     ret.color = finalColor;
-    
     
     return ret;
 }
