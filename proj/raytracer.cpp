@@ -111,9 +111,9 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
         float3 dir = normalize(light.pos - ret.hit);
         Ray shadow{ ret.hit + dir*0.0001f, dir };
 
-        // Pronounced as s-hit
-        auto shit = Trace(shadow, scene, true);
-        if(!shit.isHit)
+        // NOTE: ray does not have a length so what can happen is it intersects past the light.
+        auto sh = Trace(shadow, scene, true);
+        if(!sh.isHit)
         {
             // This is very incorrect but temp
             float l = 1.f; // Light intensity
