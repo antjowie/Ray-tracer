@@ -8,8 +8,10 @@
 // do not include headers in header files (ever).
 
 // Default screen resolution
-#define SCRWIDTH 512//512
-#define SCRHEIGHT 512//384
+#define SCRWIDTH 720
+#define SCRHEIGHT 720
+//512
+//384
 
 // C++ headers
 #include <chrono>
@@ -102,6 +104,7 @@ using namespace Tmpl8;
 // #include "my_include.h"
 
 // Raytracer stuff
+#include "utils.h"
 #include "model.h"
 #include "bvh.h"
 #include "scene.h"

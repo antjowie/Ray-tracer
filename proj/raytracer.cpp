@@ -139,7 +139,7 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
  * hw: buffer height
  */
 void RenderArea(
-    Pixel* buffer, float3* accumelator, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
+    Xorshf96& rand, Pixel* buffer, float3* accumelator, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
     uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
 {
     // Iterate over area
@@ -152,8 +152,8 @@ void RenderArea(
             float u = (float)i / bw;
             float px = 1.f / (float)bw;
             float py = 1.f / (float)bh;
-            float3 r = u * right + px * Rand(1.f);
-            float3 d = v * down + py * Rand(1.f);
+            float3 r = u * right + px * rand.random(1.f);
+            float3 d = v * down + py * rand.random(1.f);
             float3 P = topLeft + r + d;
             float3 D = normalize(P - e);
 
@@ -171,6 +171,7 @@ void RenderArea(
             buffer[j * bw + i] = ToPixel(p);
         }
     }
+    //std::cout << rand.random(1.f) << '\n';
 }
 
 void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, unsigned maxSampleCount)
@@ -186,9 +187,11 @@ void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, un
     {
         for (uint i = 0; i < screen.GetWidth(); i += squareX)
         {
-            AddTask([&, i, j]()
+            AddTask( [&, i, j, r = Xorshf96(i + j * screen.GetWidth())]() mutable
             {
-                RenderArea(
+                
+                //(i + j * screen.GetWidth());
+                RenderArea(r,
                     screen.GetBuffer(), 
                     accumelator.get(), spp, E, p0, right, down, i, j, squareX, squareY, 
                     screen.GetWidth(), screen.GetHeight(), scene);
