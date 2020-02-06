@@ -10,7 +10,7 @@ void Game::Init()
     //obs = executor.make_observer<tf::ExecutorObserver>();
     renderer.Init(*screen, scene, screen->GetWidth() * screen->GetHeight(),512);
 
-    auto box = LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Scale(5));
+    auto box = LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(2,-1,5));
     
     scene.Add(std::move(box));
     
@@ -30,7 +30,7 @@ void Game::Init()
         }
         
         fmodel.meshes.push_back(fmesh);
-        //scene.Add(std::move(fmodel));
+        scene.Add(std::move(fmodel));
     }
     // ---
 

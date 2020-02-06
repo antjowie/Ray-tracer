@@ -8,8 +8,8 @@
 // do not include headers in header files (ever).
 
 // Default screen resolution
-#define SCRWIDTH 720
-#define SCRHEIGHT 720
+#define SCRWIDTH 512
+#define SCRHEIGHT 512
 //512
 //384
 
