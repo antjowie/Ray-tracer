@@ -98,11 +98,11 @@ bool IsOccluded(const Ray& ray, float dist2, const Model& targetModel, const Sce
     return false;
 }
 
-float3 DirectIllumination(float3 hit, float3 normal, const Scene& scene)
+float3 DirectIllumination(Xorshf96& rand, float3 hit, float3 normal, const Scene& scene)
 {
     const auto& lights = scene.GetEmissive();
-    const auto& light = lights[RandomUInt() % lights.size()];
-    const auto P = light->GetRandomPoint();
+    const auto& light = lights[rand.random() % lights.size()];
+    const auto P = light->GetRandomPoint(rand.random());
     const auto L = P - hit;
     const auto dir = normalize(L);
     const auto dist2 = dot(L, L);
@@ -116,7 +116,7 @@ float3 DirectIllumination(float3 hit, float3 normal, const Scene& scene)
 }
 
 // I think the template optimizes the bool call since it generates a function definition
-PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = false)
+PrimaryHit Trace(Xorshf96& rand, const Ray& ray, const Scene& scene, bool quitOnIntersect = false)
 {
     // Get closest intersection
     auto ret = GetIntersection(ray, scene);
@@ -129,8 +129,8 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
     }
 
     // Do shading
-    auto color = DirectIllumination(ret.hit, ret.normal, scene);
-    ret.color = ToPixel(color + ToColor(ret.color));
+    auto color = DirectIllumination(rand, ret.hit, ret.normal, scene);
+    ret.color = ToPixel(color);// +ToColor(ret.color));
     
     return ret;
 }
@@ -168,7 +168,7 @@ void RenderArea(
             ray.origin = e;
             ray.dir = D;
 
-            auto hit = Trace(ray, scene);
+            auto hit = Trace(rand, ray, scene);
             
             accumelator[j * bw + i] += ToColor(hit.color);
             float3 p = accumelator[j * bw + i];
@@ -178,7 +178,6 @@ void RenderArea(
             buffer[j * bw + i] = ToPixel(p);
         }
     }
-    //std::cout << rand.random(1.f) << '\n';
 }
 
 void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, unsigned maxSampleCount)
@@ -196,8 +195,6 @@ void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, un
         {
             AddTask( [&, i, j, r = Xorshf96(i + j * screen.GetWidth())]() mutable
             {
-                
-                //(i + j * screen.GetWidth());
                 RenderArea(r,
                     screen.GetBuffer(), 
                     accumelator.get(), spp, E, p0, right, down, i, j, squareX, squareY, 

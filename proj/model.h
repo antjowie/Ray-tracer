@@ -6,9 +6,9 @@
 
 struct Material
 {
-    Pixel color;
+    Pixel color = 0xAA00AA;
 
-    bool emissive;
+    bool emissive = false;
 };
 
 struct Mesh
@@ -18,7 +18,7 @@ struct Mesh
 
     Material mat;
 
-    float3 GetRandomPoint() const;
+    float3 GetRandomPoint(unsigned random) const;
 };
 
 struct Model
@@ -27,7 +27,8 @@ struct Model
     std::vector<Mesh> meshes;
 
     // Gets a random point in one of the meshes
-    float3 GetRandomPoint() const;
+    // Pass in index since rand is not guranteed to be thread safe
+    float3 GetRandomPoint(unsigned random) const;
 };
 
 struct PointLight

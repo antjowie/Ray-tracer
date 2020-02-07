@@ -1,11 +1,11 @@
 #include "precomp.h"
 
-float3 Mesh::GetRandomPoint() const
+float3 Mesh::GetRandomPoint(unsigned random) const
 {
     // NOTE: This function takes a random point in a random face of the mesh
     // It is probably not uniform.
 
-    const auto& face = faces[std::rand() % faces.size()];
+    const auto& face = faces[random % faces.size()];
 
     float3 A = face[0];
     float3 B = face[1];
@@ -27,7 +27,7 @@ float3 Mesh::GetRandomPoint() const
     return A + (BA * u) + (CA * v);
 }
 
-float3 Model::GetRandomPoint() const
+float3 Model::GetRandomPoint(unsigned random) const
 {
-    return meshes[std::rand() % meshes.size()].GetRandomPoint();
+    return meshes[random % meshes.size()].GetRandomPoint(random);
 }

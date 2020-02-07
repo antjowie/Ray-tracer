@@ -45,9 +45,15 @@ void Game::Init()
     // Add a light
     const auto transform = mat4::Translate(0, 5, 0);
     for (auto& mesh : roof.meshes)
-        for (auto& face : mesh.faces)
-            for(int i =0; i < 3; i++)
-                face[i] = transform.TransformPoint(face[i]);
+        for (int j = 0; j < mesh.faces.size(); j++)
+        {
+           for (int i = 0; i < 3; i++)
+           {
+               mesh.faces[j][i] = transform.TransformPoint(mesh.faces[j][i]);
+           }
+           mesh.normals[j] *= -1.f;
+        }
+    
     roof.meshes.front().mat.emissive = true;
     roof.meshes.front().mat.color = 0xDDDDDD;
 
