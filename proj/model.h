@@ -25,6 +25,9 @@ struct Model
 {
     mat4 transform = mat4::Identity();
     std::vector<Mesh> meshes;
+
+    // Gets a random point in one of the meshes
+    float3 GetRandomPoint() const;
 };
 
 struct PointLight

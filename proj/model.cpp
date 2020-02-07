@@ -26,3 +26,8 @@ float3 Mesh::GetRandomPoint() const
 
     return A + (BA * u) + (CA * v);
 }
+
+float3 Model::GetRandomPoint() const
+{
+    return meshes[std::rand() % meshes.size()].GetRandomPoint();
+}

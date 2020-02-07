@@ -14,6 +14,8 @@ void Game::Init()
     
     scene.Add(std::move(box));
     
+    Model roof;
+
     // --- Make a floor
     {
         Model fmodel; Mesh fmesh;
@@ -34,12 +36,22 @@ void Game::Init()
         }
         
         fmodel.meshes.push_back(fmesh);
+        roof = fmodel;
+        fmodel.meshes.front().mat.color = 0x10F010;
         scene.Add(std::move(fmodel));
     }
     // ---
 
     // Add a light
-    scene.Add(PointLight{ make_float3(-1,3,2),20.f });
+    const auto transform = mat4::Translate(0, 5, 0);
+    for (auto& mesh : roof.meshes)
+        for (auto& face : mesh.faces)
+            for(int i =0; i < 3; i++)
+                face[i] = transform.TransformPoint(face[i]);
+    roof.meshes.front().mat.emissive = true;
+    roof.meshes.front().mat.color = 0xDDDDDD;
+
+    scene.Add(std::move(roof));
 
     //scene.Add(LoadGLTF("assets/Duck/glTF/Duck.gltf"));
     std::cout << "-----\nDone loading" << '\n';

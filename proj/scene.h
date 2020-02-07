@@ -7,14 +7,15 @@ class Scene
 {
 public:
     void Add(Model&& model);
-    void Add(PointLight&& light);
-
+    
     void Clear();
 
     const std::vector<Model>& GetModels() const;
-    const std::vector<PointLight>& GetLights() const;
+
+    // NOTE: If part of a mesh is emissive, the whole model is seen as a light
+    // This is temp for simplicity
+    const std::vector<const Model*> GetEmissive() const;
 
 private:
     std::vector<Model> m_models;
-    std::vector<PointLight> m_lights;
 };

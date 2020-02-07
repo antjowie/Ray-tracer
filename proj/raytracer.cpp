@@ -31,71 +31,95 @@ float TriangleIntersect(const Ray& ray, const float3& vertex0, const float3& ver
         return -1.f;
 }
 
-struct TraceHit
+PrimaryHit GetIntersection(const Ray& ray, const Scene& scene, bool quitOnIntersect = false)
 {
-    float t = -1.f;
-    float3 normal;
-};
+    PrimaryHit ret;
 
-TraceHit GetIntersection(const Ray& ray, const Mesh& mesh, bool quitOnIntersect = false)
-{
-    TraceHit ret;
-
-    // Iterate over each face
-    for (size_t i = 0; i < mesh.faces.size(); i++)
+    for (const auto& model : scene.GetModels())
     {
-        const auto& face = mesh.faces[i];
-
-        auto t = TriangleIntersect(
-            ray, face[0], face[1], face[2]);
-
-        // Check hit
-        if (t > 0.f && (t < ret.t || ret.t == -1.f))
+        for (const auto& mesh : model.meshes)
         {
-            ret.t = t;
-            ret.normal = mesh.normals[i];
-
-            if (quitOnIntersect)
+            // Iterate over each face
+            for (size_t i = 0; i < mesh.faces.size(); i++)
             {
-                return ret;
+                const auto& face = mesh.faces[i];
+
+                auto t = TriangleIntersect(
+                    ray, face[0], face[1], face[2]);
+
+                // Check hit
+                if (t > 0.f && (t < ret.t || ret.t == -1.f))
+                {
+                    ret.isHit = true;
+
+                    ret.t = t;
+                    ret.model = &model;
+                    ret.mesh = &mesh;
+
+                    ret.hit = ray.origin + ray.dir * t;
+                    ret.normal = mesh.normals[i];
+
+                    if (quitOnIntersect)
+                    {
+                        return ret;
+                    }
+                }
             }
+
         }
     }
 
     return ret;
 }
 
-// I think the template optimizes the bool call since it generates a function definition
-PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = false)
+bool IsOccluded(const Ray& ray, float dist2, const Model& targetModel, const Scene& scene)
 {
-    PrimaryHit ret;
-
     // Get closest intersection
     for (const auto& model : scene.GetModels())
-    {        
+    {
+        if (&model == &targetModel)
+            continue;
+
         for (const auto& mesh : model.meshes)
         {
-            auto hit = GetIntersection(ray, mesh, quitOnIntersect);
+            auto hit = GetIntersection(ray, scene);
 
-            if (hit.t > 0.f && (ret.t == -1.f || hit.t < ret.t))
+            if (hit.t > 0.f)
             {
-                ret.isHit = true;
-
-                ret.t = hit.t;
-                ret.model = &model;
-                ret.mesh = &mesh;
-
-                ret.hit = ray.origin + ray.dir * hit.t;
-                ret.normal = hit.normal;
-
-                if (quitOnIntersect)
+                const auto D = (ray.origin + ray.dir * hit.t) - ray.origin;
+                const auto d2 = dot(D, D);
+                if (d2 < dist2)
                 {
-                    ret.color = ToPixel(ray.dir * 0xff);
-                    return ret;
+                    return true;
                 }
             }
         }
     }
+    return false;
+}
+
+float3 DirectIllumination(float3 hit, float3 normal, const Scene& scene)
+{
+    const auto& lights = scene.GetEmissive();
+    const auto& light = lights[RandomUInt() % lights.size()];
+    const auto P = light->GetRandomPoint();
+    const auto L = P - hit;
+    const auto dir = normalize(L);
+    const auto dist2 = dot(L, L);
+
+    Ray shadow{ hit + dir * 0.0001f, dir };
+    if (!IsOccluded(shadow, dist2, *light, scene))
+    {
+        return ToColor(light->meshes.front().mat.color) * lights.size() * dot(normal, dir) / dist2;
+    }
+    return { 0 };
+}
+
+// I think the template optimizes the bool call since it generates a function definition
+PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = false)
+{
+    // Get closest intersection
+    auto ret = GetIntersection(ray, scene);
 
     // No hit at all
     if (!ret.isHit)
@@ -104,26 +128,9 @@ PrimaryHit Trace(const Ray& ray, const Scene& scene, bool quitOnIntersect = fals
         return ret;
     }
 
-    // Do whitted shading
-    float3 finalColor;
-    for(const auto& light: scene.GetLights())
-    {
-        float3 dir = normalize(light.pos - ret.hit);
-        Ray shadow{ ret.hit + dir*0.0001f, dir };
-
-        // NOTE: ray does not have a length so what can happen is it intersects past the light.
-        auto sh = Trace(shadow, scene, true);
-        if(!sh.isHit)
-        {
-            // This is very incorrect but temp
-            float l = 1.f; // Light intensity
-
-            finalColor += ToColor(ret.mesh->mat.color) * l * max(0.f,dot(ret.normal,shadow.dir));
-        }
-    }
-
-    
-    ret.color = ToPixel(finalColor);
+    // Do shading
+    auto color = DirectIllumination(ret.hit, ret.normal, scene);
+    ret.color = ToPixel(color + ToColor(ret.color));
     
     return ret;
 }

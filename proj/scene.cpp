@@ -5,11 +5,6 @@ void Scene::Add(Model&& model)
     m_models.push_back(model);
 }
 
-void Scene::Add(PointLight&& light)
-{
-    m_lights.push_back(light);
-}
-
 void Scene::Clear()
 {
     m_models.clear();
@@ -20,7 +15,16 @@ const std::vector<Model>& Scene::GetModels() const
     return m_models;
 }
 
-const std::vector<PointLight>& Scene::GetLights() const
+const std::vector<const Model*> Scene::GetEmissive() const
 {
-    return m_lights;
+    std::vector<const Model*> ret;
+    for (const auto& model : m_models)
+        for (const auto& mesh : model.meshes)
+            if (mesh.mat.emissive)
+            {
+                ret.push_back(&model);
+                break;
+            }
+            
+    return ret;
 }
