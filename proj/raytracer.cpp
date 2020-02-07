@@ -200,7 +200,6 @@ void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, un
     }
 }
 
-
 void Renderer::Render(const mat4& t, Surface& screen, const Scene& scene)
 {
     if (spp >= maxSampleCount) { return; }

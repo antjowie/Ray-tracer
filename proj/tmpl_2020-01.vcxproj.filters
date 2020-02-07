@@ -33,6 +33,7 @@
     </ClCompile>
     <ClCompile Include="asset_loader.cpp" />
     <ClCompile Include="bvh.cpp" />
+    <ClCompile Include="model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game.h" />

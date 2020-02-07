@@ -7,14 +7,18 @@
 struct Material
 {
     Pixel color;
+
+    bool emissive;
 };
 
 struct Mesh
 {
-    std::vector<std::array<float3,3>> faces; // x y z
-    std::vector<float3> normals; // Saved for only one vertex in the face
+    std::vector<std::array<float3,3>> faces;
+    std::vector<float3> normals;
 
     Material mat;
+
+    float3 GetRandomPoint() const;
 };
 
 struct Model
