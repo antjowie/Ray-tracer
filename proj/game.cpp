@@ -43,7 +43,7 @@ void Game::Init()
     // ---
 
     // Add a light
-    const auto transform = mat4::Translate(0, 5, 0);
+    const auto transform = mat4::Translate(0, 5, 5) * mat4::Scale(0.05f);
     for (auto& mesh : roof.meshes)
         for (int j = 0; j < mesh.faces.size(); j++)
         {
@@ -76,6 +76,7 @@ void Game::Init()
 // -----------------------------------------------------------
 void Game::Shutdown()
 {
+    taskflow.clear();
     if(obs)
     obs->dump(std::ofstream("dump.json",std::ios::beg));
 }

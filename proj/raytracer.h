@@ -21,8 +21,8 @@ struct PrimaryHit
     const Mesh* mesh;
     float3 hit;
     float3 normal;
-    
-    Pixel color;
+
+    Pixel finalColor;
 };
 
 class Renderer

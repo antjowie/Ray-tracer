@@ -58,7 +58,7 @@ PrimaryHit GetIntersection(const Ray& ray, const Scene& scene, bool quitOnInters
 
                     ret.hit = ray.origin + ray.dir * t;
                     ret.normal = mesh.normals[i];
-
+                    
                     if (quitOnIntersect)
                     {
                         return ret;
@@ -102,15 +102,17 @@ float3 DirectIllumination(Xorshf96& rand, float3 hit, float3 normal, const Scene
 {
     const auto& lights = scene.GetEmissive();
     const auto& light = lights[rand.random() % lights.size()];
-    const auto P = light->GetRandomPoint(rand.random());
-    const auto L = P - hit;
-    const auto dir = normalize(L);
-    const auto dist2 = dot(L, L);
+    const float3 P = light->GetRandomPoint(rand.random());
+    const float3 L = P - hit;
+    const float3 dir = normalize(L);
+    const float dist2 = dot(L, L);
 
     Ray shadow{ hit + dir * 0.0001f, dir };
     if (!IsOccluded(shadow, dist2, *light, scene))
     {
-        return ToColor(light->meshes.front().mat.color) * lights.size() * dot(normal, dir) / dist2;
+        float dotp = dot(normal, dir);
+        auto color = ToColor(light->meshes.front().mat.color) * lights.size() * dotp;// / dist2;;
+        return color;
     }
     return { 0 };
 }
@@ -124,13 +126,21 @@ PrimaryHit Trace(Xorshf96& rand, const Ray& ray, const Scene& scene, bool quitOn
     // No hit at all
     if (!ret.isHit)
     {
-        ret.color = ToPixel(ray.dir);
+        ret.finalColor = ToPixel(ray.dir);
         return ret;
     }
 
     // Do shading
-    auto color = DirectIllumination(rand, ret.hit, ret.normal, scene);
-    ret.color = ToPixel(color);// +ToColor(ret.color));
+    float3 color;
+    if (ret.mesh->mat.emissive)
+    {
+        ret.finalColor = ret.mesh->mat.color;
+    }
+    else
+    {
+        auto color = DirectIllumination(rand, ret.hit, ret.normal, scene);
+        ret.finalColor = ToPixel(color * ret.mesh->mat.color);
+    }
     
     return ret;
 }
@@ -170,7 +180,7 @@ void RenderArea(
 
             auto hit = Trace(rand, ray, scene);
             
-            accumelator[j * bw + i] += ToColor(hit.color);
+            accumelator[j * bw + i] += ToColor(hit.finalColor);
             float3 p = accumelator[j * bw + i];
             float scale = 1.0f / spp;
             p *= scale;
