@@ -106,7 +106,7 @@ float3 DirectIllumination(Xorshf96& rand, float3 hit, float3 normal, const Scene
     if (!IsOccluded(shadow, *light, scene))
     {
         float dotp = dot(normal, normalize(shadow.dir));
-        auto color = ToColor(light->meshes.front().mat.color) * lights.size() * dotp / dot(L,L);
+        auto color = ToColor(light->meshes.front().mat.color) * lights.size() * dotp;// / dot(L, L);
         return color;
     }
     return { 0 };
@@ -134,7 +134,7 @@ PrimaryHit Trace(Xorshf96& rand, const Ray& ray, const Scene& scene, bool quitOn
     else
     {
         auto color = DirectIllumination(rand, ret.hit, ret.normal, scene);
-        ret.finalColor = ToPixel(color * ret.mesh->mat.color);
+        ret.finalColor = ToPixel(color * ToColor(ret.mesh->mat.color));
     }
     
     return ret;
