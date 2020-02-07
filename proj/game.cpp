@@ -10,7 +10,7 @@ void Game::Init()
     //obs = executor.make_observer<tf::ExecutorObserver>();
     renderer.Init(*screen, scene, screen->GetWidth() * screen->GetHeight(),512);
 
-    auto box = LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(2,0,5));
+    auto box = LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(2,2,5));
     
     scene.Add(std::move(box));
     
@@ -43,7 +43,7 @@ void Game::Init()
     // ---
 
     // Add a light
-    const auto transform = mat4::Translate(0, 5, 5) * mat4::Scale(0.05f);
+    const auto transform = mat4::Translate(0, 8, 5) * mat4::Scale(0.025f);
     for (auto& mesh : roof.meshes)
         for (int j = 0; j < mesh.faces.size(); j++)
         {

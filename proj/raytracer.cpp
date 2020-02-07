@@ -72,7 +72,7 @@ PrimaryHit GetIntersection(const Ray& ray, const Scene& scene, bool quitOnInters
     return ret;
 }
 
-bool IsOccluded(const Ray& ray, float dist2, const Model& targetModel, const Scene& scene)
+bool IsOccluded(const Ray& ray, const Model& targetModel, const Scene& scene)
 {
     // Get closest intersection
     for (const auto& model : scene.GetModels())
@@ -84,14 +84,9 @@ bool IsOccluded(const Ray& ray, float dist2, const Model& targetModel, const Sce
         {
             auto hit = GetIntersection(ray, scene);
 
-            if (hit.t > 0.f)
+            if (hit.isHit && hit.t < 1.f)
             {
-                const auto D = (ray.origin + ray.dir * hit.t) - ray.origin;
-                const auto d2 = dot(D, D);
-                if (d2 < dist2)
-                {
-                    return true;
-                }
+                return true;
             }
         }
     }
@@ -104,14 +99,14 @@ float3 DirectIllumination(Xorshf96& rand, float3 hit, float3 normal, const Scene
     const auto& light = lights[rand.random() % lights.size()];
     const float3 P = light->GetRandomPoint(rand.random());
     const float3 L = P - hit;
-    const float3 dir = normalize(L);
-    const float dist2 = dot(L, L);
 
-    Ray shadow{ hit + dir * 0.0001f, dir };
-    if (!IsOccluded(shadow, dist2, *light, scene))
+    Ray shadow;
+    shadow.origin = hit;
+    shadow.dir = L;
+    if (!IsOccluded(shadow, *light, scene))
     {
-        float dotp = dot(normal, dir);
-        auto color = ToColor(light->meshes.front().mat.color) * lights.size() * dotp;// / dist2;;
+        float dotp = dot(normal, normalize(shadow.dir));
+        auto color = ToColor(light->meshes.front().mat.color) * lights.size() * dotp / dot(L,L);
         return color;
     }
     return { 0 };
