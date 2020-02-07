@@ -90,6 +90,8 @@ void Game::Tick(float deltaTime)
     renderer.Render(camera, *screen, scene);
 
     MoveCamera();
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+        renderer.OnMove();
 
     // ImGui stuff
     {
@@ -116,9 +118,10 @@ void Game::Tick(float deltaTime)
 
         if (ImGui::CollapsingHeader("Renderer", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Text("Square X: "); ImGui::SameLine(); ImGui::DragScalar("##squareX", ImGuiDataType_U32, &renderer.squareX, 0.2f, 0);
-            ImGui::Text("Square Y: "); ImGui::SameLine(); ImGui::DragScalar("##squareY", ImGuiDataType_U32, &renderer.squareY, 0.2f, 0);
-
+            ImGui::Text("Square X: "); ImGui::SameLine(); ImGui::DragScalar("##squareX", ImGuiDataType_U32, &renderer.squareX,2, 0);
+            ImGui::Text("Square Y: "); ImGui::SameLine(); ImGui::DragScalar("##squareY", ImGuiDataType_U32, &renderer.squareY,2, 0);
+            ImGui::Text("Focal length: "); ImGui::SameLine(); ImGui::DragFloat("##focal", &renderer.focalLength);
+            ImGui::Text("Apeture radius: "); ImGui::SameLine(); ImGui::DragFloat("##apeture", &renderer.apertureRadius, 0.1f);
         }
         ImGui::End();
     }

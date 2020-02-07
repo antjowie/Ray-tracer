@@ -152,7 +152,8 @@ PrimaryHit Trace(Xorshf96& rand, const Ray& ray, const Scene& scene, bool quitOn
  * hw: buffer height
  */
 void RenderArea(
-    Xorshf96& rand, Pixel* buffer, float3* accumelator, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
+    bool& dof, float& focalLength, float& aperture, Xorshf96& rand, 
+    Pixel* buffer, float3* accumelator, unsigned spp, float3 e, float3 topLeft, float3 right, float3 down,
     uint x, uint y, uint w, uint h, uint bw, uint bh, const Scene& scene)
 {
     // Iterate over area
@@ -172,15 +173,23 @@ void RenderArea(
 
             Ray ray;
             ray.origin = e;
+            ray.dir = D;
+            
             // For DOF
+            if(dof)
             {
+                // Use focal length to calculate correct direction for DOF
+                float3 focalPoint = ray.origin + ray.dir * focalLength;
+
+                // Calculate 
                 float radius = 0.1f;
                 float3 offset =
                     (right * rand.random(radius) - radius * 0.5f) +
                     (down * rand.random(radius) + radius * 0.5f);
                 ray.origin += offset;
+
+                ray.dir = normalize(focalPoint - ray.origin);
             }
-            ray.dir = D;
 
             auto hit = Trace(rand, ray, scene);
             
@@ -196,6 +205,10 @@ void RenderArea(
 
 void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, unsigned maxSampleCount)
 {
+    DOF = true;
+    focalLength = 5;
+    apertureRadius = 0.5f;
+
     squareX = 16;
     squareY = 16;
     this->pixelCount = pixelCount;
@@ -209,9 +222,8 @@ void Renderer::Init(Surface& screen, const Scene& scene, unsigned pixelCount, un
         {
             AddTask( [&, i, j, r = Xorshf96(i + j * screen.GetWidth())]() mutable
             {
-                RenderArea(r,
-                    screen.GetBuffer(), 
-                    accumelator.get(), spp, E, p0, right, down, i, j, squareX, squareY, 
+                RenderArea(DOF, focalLength, apertureRadius, r, screen.GetBuffer(), accumelator.get(), 
+                    spp, E, p0, right, down, i, j, squareX, squareY, 
                     screen.GetWidth(), screen.GetHeight(), scene);
             });
         }

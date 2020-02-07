@@ -41,6 +41,9 @@ public:
     unsigned squareX;
     unsigned squareY;
 
+    bool DOF;
+    float focalLength; 
+    float apertureRadius;
 
 private:
     unsigned spp = 0;
