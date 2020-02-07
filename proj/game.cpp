@@ -20,10 +20,14 @@ void Game::Init()
         fmesh.mat.color = 0x404040;
         
         fmesh.faces.emplace_back();
-        fmesh.faces.back()[0] = { -30.f, -1.5f, -30.f };
-        fmesh.faces.back()[1] = { 30.f,  -1.5f, -30.f };
-        fmesh.faces.back()[2] = { 0.f,   -1.5f, 30.f };
-        
+        fmesh.faces.back()[0] = { -100.f, -1.5f, 100.f };
+        fmesh.faces.back()[1] = { -100.f,  -1.5f, -100.f };
+        fmesh.faces.back()[2] = { 100.f,  -1.5f, -100.f };
+        fmesh.faces.emplace_back();
+        fmesh.faces.back()[0] = { 100.f, -1.5f, 100.f };
+        fmesh.faces.back()[1] = { -100.f,  -1.5f, 100.f };
+        fmesh.faces.back()[2] = { 100.f,   -1.5f, -100.f };
+
         for (int i = 0; i < fmesh.faces.size(); i++)
         {
             fmesh.normals.push_back({ 0.f,1.f,0.f });
