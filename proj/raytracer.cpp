@@ -121,7 +121,8 @@ PrimaryHit Trace(Xorshf96& rand, const Ray& ray, const Scene& scene, bool quitOn
     // No hit at all
     if (!ret.isHit)
     {
-        ret.finalColor = ToPixel(ray.dir);
+        //ret.finalColor = ToPixel(ray.dir);
+        ret.finalColor = 0;
         return ret;
     }
 
@@ -162,15 +163,23 @@ void RenderArea(
         {
             // Generate ray
             float u = (float)i / bw;
-            float px = 1.f / (float)bw;
-            float py = 1.f / (float)bh;
-            float3 r = u * right + px * rand.random(1.f);
-            float3 d = v * down + py * rand.random(1.f);
+            float px = (1.f / (float)bw) * rand.random(1.f); // For AA
+            float py = (1.f / (float)bh) * rand.random(1.f); 
+            float3 r = u * right + px;
+            float3 d = v * down  + py;
             float3 P = topLeft + r + d;
             float3 D = normalize(P - e);
 
             Ray ray;
             ray.origin = e;
+            // For DOF
+            {
+                float radius = 0.1f;
+                float3 offset =
+                    (right * rand.random(radius) - radius * 0.5f) +
+                    (down * rand.random(radius) + radius * 0.5f);
+                ray.origin += offset;
+            }
             ray.dir = D;
 
             auto hit = Trace(rand, ray, scene);

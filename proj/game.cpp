@@ -10,25 +10,23 @@ void Game::Init()
     //obs = executor.make_observer<tf::ExecutorObserver>();
     renderer.Init(*screen, scene, screen->GetWidth() * screen->GetHeight(),512);
 
-    auto box = LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(1,0.5f,5));
-    
-    scene.Add(std::move(box));
+    scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(1, 0, 5)));
+    scene.Add(LoadGLTF("assets/Box/glTF/Box.gltf", mat4::Translate(-1.5f, 0, 6) * mat4::Scale(2)));
     
     Model roof;
-
     // --- Make a floor
     {
         Model fmodel; Mesh fmesh;
         fmesh.mat.color = 0x404040;
         
         fmesh.faces.emplace_back();
-        fmesh.faces.back()[0] = { -100.f, -1.5f, 100.f };
-        fmesh.faces.back()[1] = { -100.f,  -1.5f, -100.f };
-        fmesh.faces.back()[2] = { 100.f,  -1.5f, -100.f };
+        fmesh.faces.back()[0] = { -100.f, -3.f, 100.f };
+        fmesh.faces.back()[1] = { -100.f,  -3.f, -100.f };
+        fmesh.faces.back()[2] = { 100.f,  -3.f, -100.f };
         fmesh.faces.emplace_back();
-        fmesh.faces.back()[0] = { 100.f, -1.5f, 100.f };
-        fmesh.faces.back()[1] = { -100.f,  -1.5f, 100.f };
-        fmesh.faces.back()[2] = { 100.f,   -1.5f, -100.f };
+        fmesh.faces.back()[0] = { 100.f, -3.f, 100.f };
+        fmesh.faces.back()[1] = { -100.f,  -3.f, 100.f };
+        fmesh.faces.back()[2] = { 100.f,   -3.f, -100.f };
 
         for (int i = 0; i < fmesh.faces.size(); i++)
         {
@@ -43,7 +41,7 @@ void Game::Init()
     // ---
 
     // Add a light
-    const auto transform = mat4::Translate(0, 2, 5) * mat4::Scale(0.01f);
+    const auto transform = mat4::Translate(0, 2, 4) * mat4::Scale(0.01f);
     for (auto& mesh : roof.meshes)
         for (int j = 0; j < mesh.faces.size(); j++)
         {
@@ -55,7 +53,7 @@ void Game::Init()
         }
     
     roof.meshes.front().mat.emissive = true;
-    roof.meshes.front().mat.color = 0xDDDDDD;
+    roof.meshes.front().mat.color = 0xFFFFFF;
 
     scene.Add(std::move(roof));
 
